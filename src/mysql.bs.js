@@ -59,32 +59,45 @@ function query(connection, sql, callback) {
   return /* () */0;
 }
 
-function create_response(results, fields) {
-  return /* record */[
-          /* fields */fields,
-          /* results */results
-        ];
+function end_$1(connection, x) {
+  return Promise.resolve(x).then((function (x) {
+                connection.end();
+                return x;
+              }));
 }
 
-function query$1(connection, string) {
+var Connection$1 = /* module */[/* end_ */end_$1];
+
+function handler(resolve, reject, error, rows, fields) {
+  if (error == null) {
+    return resolve(/* tuple */[
+                rows,
+                fields
+              ]);
+  } else {
+    return reject(error);
+  }
+}
+
+function query$1(connection, sql, placeholders, _) {
   return new Promise((function (resolve, reject) {
-                connection.query(string, (function (error, results, fields) {
-                        if (error == null) {
-                          return resolve(/* record */[
-                                      /* fields */fields,
-                                      /* results */results
-                                    ]);
-                        } else {
-                          return reject(error);
-                        }
-                      }));
-                return /* () */0;
+                return unnamed(connection, sql, placeholders, (function (param, param$1, param$2) {
+                              return handler(resolve, reject, param, param$1, param$2);
+                            }));
+              }));
+}
+
+function pquery(sql, placeholders, pconn) {
+  return pconn.then((function (conn) {
+                return query$1(conn, sql, placeholders, /* () */0);
               }));
 }
 
 var Promise$1 = /* module */[
-  /* create_response */create_response,
-  /* query */query$1
+  /* Connection */Connection$1,
+  /* handler */handler,
+  /* query */query$1,
+  /* pquery */pquery
 ];
 
 exports.Connection = Connection;

@@ -10,14 +10,4 @@ Mysql.query(conn, "SHOW DATABASES", (error, results, fields) =>
   }
 );
 
-Mysql.Promise.query(conn, "SHOW DATABASES")
-|> Js.Promise.then_(value => {
-     Js.log(value);
-     Js.Promise.resolve(1);
-   })
-|> Js.Promise.catch((err: Js.Promise.error) => {
-     Js.log2("Failure!!", err);
-     Js.Promise.resolve(-1);
-   });
-
 Mysql.Connection.end_(conn);

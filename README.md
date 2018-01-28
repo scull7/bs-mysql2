@@ -77,17 +77,27 @@ Mysql.Connection.end_(conn);
 let conn =
   Mysql.Connection.make(~host="127.0.0.1", ~port=3306, ~user="root", ());
 
-Mysql.Promise.query(conn, "SHOW DATABASES")
+/* Here we use the pipe query function (pquery) */
+Js.Promise.resolve(conn)
+|> Mysql.Promise.pquery
+    (~sql="SELECT ? as search", ~placeholders=[|"%schema"|])
+/* Alternatively we could use the normal query method
+|> Js.Promise.then_(Mysql.Promise.query(
+    ~sql="SELECT ? as search",
+    ~placeholders=[|"%something"|]
+  ))
+*/
 |> Js.Promise.then_(value => {
      Js.log(value);
      Js.Promise.resolve(1);
    })
+|> Mysql.Promise.Connection.end_(conn)
 |> Js.Promise.catch((err: Js.Promise.error) => {
      Js.log2("Failure!!", err);
+     Mysql.Connection.end_(conn);
      Js.Promise.resolve(-1);
    });
 
-Mysql.Connection.end_(conn);
 ```
 
 ## How do I install it?

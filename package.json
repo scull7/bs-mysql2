@@ -4,6 +4,7 @@
   "description": "ReasonML bindings to the mysql2 library.",
   "scripts": {
     "examples:simple": "node examples/simple.bs.js",
+    "examples:promise": "node examples/promise.bs.js",
     "examples:prepared-statements": "node examples/prepared_statements.bs.js",
     "build": "bsb -make-world",
     "start": "bsb -make-world -w",
