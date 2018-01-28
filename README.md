@@ -1,21 +1,27 @@
 ![Project Status](https://img.shields.io/badge/status-alpha-red.svg)
 
 # bs-mysql2
-ReasonML bindings to the [mysql2][mysql2] library.
+ReasonML bindings to the [mysql2] library.
 
 This is a very rough implementation that will enable very simple use cases.
 
-Initially this was just a copy of [bs-mysql][bs-mysql].
+Initially this was just a copy of [bs-mysql].
 
 ## Why?
 
-Not all of the [mysql2] library [features][mysql2-features] are implemented but
-there's the [Promise based wrapper](#promise-interface) and
-[Named Placeholders](#named-placeholders).
+The main difference between these bindings and the [bs-mysql] bindings is the
+use of the [mysql2] library / driver over the [mysql] (version 1) driver. You
+can see the reasoning behind the new [mysql2] driver here:
+[History and Why MySQL2][mysql2-features]
 
 Also, hopefully, the interface presented feels more conventional
 for ReasonmML / OCaml
 
+## Status
+
+Not all of the [mysql2] library [features][mysql2-features] are implemented but
+there is a usable implementation of the [Promise based wrapper](#promise-interface)
+and [Named Placeholders](#named-placeholders).
 
  - [x] Faster / Better Performance (_kind of get this for free_)
  - [x] [Prepared Statements][mysql2-prepared-statements] - [examples](#prepared-statements)*
@@ -160,6 +166,7 @@ yarn run examples:prepared-statements
 Mostly everything...
 
 [bs-mysql]: https://github.com/davidgomes/bs-mysql
+[mysql]: https://www.npmjs.com/package/mysql
 [mysql2]: https://www.npmjs.com/package/mysql2
 [mysql2-features]: https://github.com/sidorares/node-mysql2#history-and-why-mysql2
 [mysql2-prepared-statements]: https://github.com/sidorares/node-mysql2/tree/master/documentation/Prepared-Statements.md
