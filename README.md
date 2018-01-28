@@ -1,6 +1,6 @@
 ![Project Status](https://img.shields.io/badge/status-alpha-red.svg)
 
-# bs-nconf
+# bs-mysql2
 ReasonML bindings to the [mysql2][mysql2] library.
 
 This is a very rough implementation that will enable very simple use cases.
