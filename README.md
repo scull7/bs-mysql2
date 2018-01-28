@@ -18,14 +18,14 @@ for ReasonmML / OCaml
 
 
  - [x] Faster / Better Performance (_kind of get this for free_)
- - [x] [Prepared Statements](mysql2-prepared-statements) - [examples](#prepared-statements)*
+ - [x] [Prepared Statements][mysql2-prepared-statements] - [examples](#prepared-statements)*
  - [ ] MySQL Binary Log Protocol
- - [ ] [MySQL Server](mysql2-server)
+ - [ ] [MySQL Server][mysql2-server]
  - [ ] Extended support for Encoding and Collation
- - [x] [Promise Wrapper](mysql2-promise) - [examples](#promise-interface)*
+ - [x] [Promise Wrapper][mysql2-promise] - [examples](#promise-interface)*
  - [ ] Compression
- - [ ] SSL and [Authentication Switch](mysql2-auth-switch)
- - [ ] [Custom Streams](mysql2-custom-streams)
+ - [ ] SSL and [Authentication Switch][mysql2-auth-switch]
+ - [ ] [Custom Streams][mysql2-custom-streams]
  - [ ] Pooling
 
  _* incomplete but usable implementation_
