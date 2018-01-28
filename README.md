@@ -148,6 +148,12 @@ See the [Usage](#usage) section above...
 ```shell
 yarn run examples:simple
 ```
+```shell
+yarn run examples:promise
+```
+```shell
+yarn run examples:prepared-statements
+```
 
 ## What's missing?
 
