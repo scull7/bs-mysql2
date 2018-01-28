@@ -18,6 +18,7 @@
   ],
   "bugs": "https://github.com/scull7/bs-mysql2/issues",
   "main": "src/mysql.bs.js",
+  "homepage": "https://github.com/scull7/bs-mysql2",
   "repository": "git@github.com:scull7/bs-mysql2.git",
   "author": "Nathan Sculli <scull7@gmail.com>",
   "license": "MIT",
