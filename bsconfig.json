@@ -1,0 +1,20 @@
+{
+  "name": "bs-mysql2",
+  "version": "0.1.0",
+  "package-specs": {
+    "module": "commonjs",
+    "in-source": true
+  },
+  "suffix": ".bs.js",
+  "sources": [
+    "src",
+    {
+      "dir": "examples",
+      "type": "dev"
+    }
+  ],
+  "bs-dev-dependencies": [],
+  "bs-dependencies": [],
+  "bsc-flags": [ "-bs-no-version-header", "-bs-super-errors" ],
+  "refmt": 3
+}
