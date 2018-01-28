@@ -7,6 +7,29 @@ This is a very rough implementation that will enable very simple use cases.
 
 Initially this was just a copy of [bs-mysql][bs-mysql].
 
+## Why?
+
+Not all of the [mysql2] library [features][mysql2-features] are implemented but
+there's the [Promise based wrapper](#promise-interface) and
+[Named Placeholders](#named-placeholders).
+
+Also, hopefully, the interface presented feels more conventional
+for ReasonmML / OCaml
+
+
+ - [x] Faster / Better Performance (_kind of get this for free_)
+ - [x] [Prepared Statements](mysql2-prepared-statements) - [examples](#prepared-statements)*
+ - [ ] MySQL Binary Log Protocol
+ - [ ] [MySQL Server](mysql2-server)
+ - [ ] Extended support for Encoding and Collation
+ - [x] [Promise Wrapper](mysql2-promise) - [examples](#promise-interface)*
+ - [ ] Compression
+ - [ ] SSL and [Authentication Switch](mysql2-auth-switch)
+ - [ ] [Custom Streams](mysql2-custom-streams)
+ - [ ] Pooling
+
+ _* incomplete but usable implementation_
+
 ## Usage
 
 ### Standard Callback Interface
@@ -130,5 +153,11 @@ yarn run examples:simple
 
 Mostly everything...
 
-[mysql2]: https://www.npmjs.com/package/mysql2
 [bs-mysql]: https://github.com/davidgomes/bs-mysql
+[mysql2]: https://www.npmjs.com/package/mysql2
+[mysql2-features]: https://github.com/sidorares/node-mysql2#history-and-why-mysql2
+[mysql2-prepared-statements]: https://github.com/sidorares/node-mysql2/tree/master/documentation/Prepared-Statements.md
+[mysql2-server]: https://github.com/sidorares/node-mysql2/tree/master/documentation/MySQL-Server.md
+[mysql2-promise]: https://github.com/sidorares/node-mysql2/tree/master/documentation/Promise-Wrapper.md
+[mysql2-auth-switch]: https://github.com/sidorares/node-mysql2/tree/master/documentation/Authentication-Switch.md
+[mysql2-custom-streams]: https://github.com/sidorares/node-mysql2/tree/master/documentation/Extras.md
