@@ -19,5 +19,9 @@ _build/
 setup.data
 setup.log
 
-# node stuff
+# bucklescript ignores
+lib/*
+!lib/js
+.merlin
+.bsb.lock
 node_modules/
