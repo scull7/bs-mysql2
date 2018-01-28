@@ -31,7 +31,7 @@ Mysql.Connection.end_(conn);
 let conn =
   Mysql.Connection.make(~host="127.0.0.1", ~port=3306, ~user="root", ());
 
-Mysql.Promise.query(conn, "SHOW foo DATABASES")
+Mysql.Promise.query(conn, "SHOW DATABASES")
 |> Js.Promise.then_(value => {
      Js.log(value);
      Js.Promise.resolve(1);
