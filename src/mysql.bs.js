@@ -1,6 +1,7 @@
 'use strict';
 
-var Mysql2 = require("mysql2");
+var Mysql2            = require("mysql2");
+var Js_null_undefined = require("bs-platform/lib/js/js_null_undefined.js");
 
 function make(host, port, user, password, database, _) {
   var tmp = { };
@@ -32,6 +33,32 @@ var Connection = /* module */[
   /* end_ */end_
 ];
 
+function unnamed(connection, sql, placeholders, callback) {
+  var params = Js_null_undefined.from_opt(placeholders);
+  connection.execute(sql, params, callback);
+  return /* () */0;
+}
+
+function named(connection, sql, placeholders, callback) {
+  var options = {
+    sql: sql,
+    values: Js_null_undefined.from_opt(placeholders),
+    namedPlaceholders: true
+  };
+  connection.execute(options, callback);
+  return /* () */0;
+}
+
+var Execute = /* module */[
+  /* unnamed */unnamed,
+  /* named */named
+];
+
+function query(connection, sql, callback) {
+  connection.query(sql, callback);
+  return /* () */0;
+}
+
 function create_response(results, fields) {
   return /* record */[
           /* fields */fields,
@@ -39,7 +66,7 @@ function create_response(results, fields) {
         ];
 }
 
-function query(connection, string) {
+function query$1(connection, string) {
   return new Promise((function (resolve, reject) {
                 connection.query(string, (function (error, results, fields) {
                         if (error == null) {
@@ -55,9 +82,13 @@ function query(connection, string) {
               }));
 }
 
-var Promise$1 = /* module */[/* query */query];
+var Promise$1 = /* module */[
+  /* create_response */create_response,
+  /* query */query$1
+];
 
-exports.Connection      = Connection;
-exports.create_response = create_response;
-exports.Promise         = Promise$1;
+exports.Connection = Connection;
+exports.Execute    = Execute;
+exports.query      = query;
+exports.Promise    = Promise$1;
 /* mysql2 Not a pure module */
