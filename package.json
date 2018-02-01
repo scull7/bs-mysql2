@@ -27,5 +27,8 @@
   "dependencies": {
     "bs-platform": "^2.1.0",
     "mysql2": "^1.5.1"
+  },
+  "devDependencies": {
+    "@glennsl/bs-jest": "^0.3.3"
   }
 }

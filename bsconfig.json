@@ -11,9 +11,13 @@
     {
       "dir": "examples",
       "type": "dev"
+    },
+    {
+      "dir": "__tests__",
+      "type": "dev"
     }
   ],
-  "bs-dev-dependencies": [],
+  "bs-dev-dependencies": [ "@glennsl/bs-jest" ],
   "bs-dependencies": [],
   "bsc-flags": [ "-bs-no-version-header", "-bs-super-errors" ],
   "refmt": 3
