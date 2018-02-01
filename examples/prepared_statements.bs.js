@@ -1,11 +1,11 @@
 'use strict';
 
-var Curry = require("bs-platform/lib/js/curry.js");
-var MySql = require("../src/MySql.bs.js");
+var SqlCommon  = require("bs-sql-common/src/SqlCommon.bs.js");
+var Connection = require("../src/Connection.bs.js");
 
-var conn = Curry._6(MySql.Connection[/* make */1], /* Some */["127.0.0.1"], /* Some */[3306], /* Some */["root"], /* None */0, /* None */0, /* () */0);
+var conn = Connection.make(/* Some */["127.0.0.1"], /* Some */[3306], /* Some */["root"], /* None */0, /* None */0, /* () */0);
 
-MySql.with_params(conn, "SELECT 1 + ? + ? as result", /* int array */[
+SqlCommon.with_params(conn, "SELECT 1 + ? + ? as result", /* int array */[
       5,
       6
     ], (function (result) {
@@ -23,7 +23,7 @@ MySql.with_params(conn, "SELECT 1 + ? + ? as result", /* int array */[
         }
       }));
 
-MySql.with_named_params(conn, "SELECT :x + :y as z", {
+SqlCommon.with_named_params(conn, "SELECT :x + :y as z", {
       x: 1,
       y: 2
     }, (function (result) {
@@ -41,7 +41,7 @@ MySql.with_named_params(conn, "SELECT :x + :y as z", {
         }
       }));
 
-Curry._1(MySql.Connection[/* close */0], conn);
+Connection.close(conn);
 
 exports.conn = conn;
 /* conn Not a pure module */

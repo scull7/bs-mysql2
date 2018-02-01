@@ -5,7 +5,7 @@ let test_handler = function
   | Response.Select s -> Js.log2 "SELECT: " s
   | Response.Mutation m -> Js.log2 "MUTATION: " m
 
-let _ = MySql.raw conn "SHOW DATABASES" test_handler
+let _ = MySql.Query.raw conn "SHOW DATABASES" test_handler
 
 let table_sql = {|
   CREATE TABLE IF NOT EXISTS test.simple (
@@ -15,21 +15,21 @@ let table_sql = {|
   )
 |}
 
-let _ = MySql.raw conn table_sql test_handler
+let _ = MySql.Query.raw conn table_sql test_handler
 
 let simple_insert_sql = "INSERT INTO test.simple (code) VALUES ('foo')"
 
-let _ = MySql.raw conn simple_insert_sql test_handler
+let _ = MySql.Query.raw conn simple_insert_sql test_handler
 
 let simple_update_sql = "UPDATE test.simple SET code='foo2' WHERE code='foo'"
 
-let _ = MySql.raw conn simple_update_sql test_handler
+let _ = MySql.Query.raw conn simple_update_sql test_handler
 
-let _ = MySql.raw
+let _ = MySql.Query.raw
   conn
   "SELECT NULL FROM test.simple WHERE false"
   test_handler
 
-let _ = MySql.raw conn "SELECT * FROM test.simple" test_handler
+let _ = MySql.Query.raw conn "SELECT * FROM test.simple" test_handler
 
 let _ = MySql.Connection.close conn

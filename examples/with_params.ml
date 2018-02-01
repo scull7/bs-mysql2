@@ -4,7 +4,8 @@ let logThenClose label x =
   let _ = Js.log2 label x in
   MySql.Connection.close conn
 
-let _ = MySql.with_params conn "SELECT 1 + ? + ? as result" [|5; 6|] (fun r ->
+let sql1 = "SELECT 1 + ? + ? as result"
+let _ = MySql.Query.with_params conn sql1 [|5; 6|] (fun r ->
   match r with
   | Response.Error e -> Js.log2 "ERROR: " e
   | Response.Select s -> Js.log2 "SELECT: " s
@@ -13,7 +14,7 @@ let _ = MySql.with_params conn "SELECT 1 + ? + ? as result" [|5; 6|] (fun r ->
 
 let sql2 = "SELECT :x + :y as z"
 let params2 = [%bs.obj {x = 1; y = 2}]
-let _ = MySql.with_named_params conn sql2 params2 (fun r ->
+let _ = MySql.Query.with_named_params conn sql2 params2 (fun r ->
   match r with
   | Response.Error e -> logThenClose "ERROR: " e
   | Response.Select s -> logThenClose "SELECT: " s
