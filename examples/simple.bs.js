@@ -8,16 +8,13 @@ var conn = Curry._6(MySql.Connection[/* make */1], /* Some */["127.0.0.1"], /* S
 function test_handler(param) {
   switch (param.tag | 0) {
     case 0 : 
-        console.log("Mutation: ");
-        console.log(param[0]);
+        console.log("MUTATION: ", param[0]);
         return /* () */0;
     case 1 : 
-        console.log("Select: ");
-        console.log(param[0]);
+        console.log("SELECT: ", param[0]);
         return /* () */0;
     case 2 : 
-        console.log("ERROR: ");
-        console.log(param[0]);
+        console.log("ERROR: ", param[0]);
         return /* () */0;
     
   }

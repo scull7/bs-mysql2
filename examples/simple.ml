@@ -1,13 +1,9 @@
 let conn = MySql.Connection.make ~host:"127.0.0.1" ~port:3306 ~user:"root" ()
 
 let test_handler = function
-  | Driver.Error e ->
-    let _ = Js.log "ERROR: " in Js.log e
-  | Driver.Select s ->
-    let _ = Js.log "Select: " in Js.log s
-  | Driver.Mutation m ->
-    let _ = Js.log "Mutation: " in Js.log m
-
+  | Response.Error e -> Js.log2 "ERROR: " e
+  | Response.Select s -> Js.log2 "SELECT: " s
+  | Response.Mutation m -> Js.log2 "MUTATION: " m
 
 let _ = MySql.raw conn "SHOW DATABASES" test_handler
 

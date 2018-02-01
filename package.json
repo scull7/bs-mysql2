@@ -6,6 +6,7 @@
     "examples:simple": "node examples/simple.bs.js",
     "examples:promise": "node examples/promise.bs.js",
     "examples:prepared-statements": "node examples/prepared_statements.bs.js",
+    "examples:with-params": "node examples/with_params.bs.js",
     "build": "bsb -make-world",
     "start": "bsb -make-world -w",
     "clean": "bsb -clean-world"

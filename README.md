@@ -41,92 +41,86 @@ and [Named Placeholders](#named-placeholders).
 ### Standard Callback Interface
 
 #### Standard Query Method
-```reason
-let conn =
-  Mysql.Connection.make(~host="127.0.0.1", ~port=3306, ~user="root", ());
+```ocaml
+let conn = MySql.Connection.make ~host:"127.0.0.1" ~port:3306 ~user:"root" ()
 
-Mysql.query(conn, "SHOW DATABASES", (error, results, fields) =>
-  switch (Js.Nullable.to_opt(error)) {
-  | None =>
-    Js.log(results);
-    Js.log(fields);
-  | Some(error) => Js.log(error##message)
-  }
-);
+let _ = MySql.raw conn "SHOW DATABASES" (fun r ->
+  match r with
+  | Response.Error e -> Js.log2 "ERROR: " e
+  | Response.Select s -> Js.log2 "SELECT: " s
+  | Response.Mutation m -> Js.log2 "MUTATION: " m
+)
 
-Mysql.Connection.end_(conn);
+let _ = MySql.Connection.close conn
 ```
 
 #### Prepared Statements
 
 ##### Named Placeholders
+```ocaml
+let conn = MySql.Connection.make ~host:"127.0.0.1" ~port:3306 ~user:"root" ()
+
+let logThenClose label x =
+  let _ = Js.log2 label x in
+  MySql.Connection.close conn
+
+let sql2 = "SELECT :x + :y as z"
+let params2 = [%bs.obj {x = 1; y = 2}]
+let _ = MySql.with_named_params conn sql2 params2 (fun r ->
+  match r with
+  | Response.Error e -> logThenClose "ERROR: " e
+  | Response.Select s -> logThenClose "SELECT: " s
+  | Response.Mutation m -> logThenClose "MUTATION: " m
+)
+```
+
 ```reason
 let conn =
-  Mysql.Connection.make(~host="127.0.0.1", ~port=3306, ~user="root", ());
+  MySql.Connection.make(~host="127.0.0.1", ~port=3306, ~user="root", ());
 
-Mysql.Execute.named(
-  ~connection=conn,
-  ~sql="SELECT :x + :y as z",
-  ~placeholders={"x": 1, "y": 2},
-  (err, rows, fields) =>
-  switch (Js.Nullable.to_opt(err)) {
-  | None =>
-    Js.log(rows);
-    Js.log(fields);
-  | Some(err) => Js.log(err)
+MySql.with_named_params(conn, "SELECT :x + :y as z", {"x": 1, "y": 2}, result =>
+  switch result {
+  | Error(e) => Js.log2("ERROR: ", e)
+  | Mutation(m) => Js.log2("MUTATION: ", m)
+  | Select(s) => Js.log2("SELECT: ", s)
   }
 );
 
-Mysql.Connection.end_(conn);
+MySql.Connection.close(conn);
 ```
 
 ##### Unnamed Placeholders
-```reason
-let conn =
-  Mysql.Connection.make(~host="127.0.0.1", ~port=3306, ~user="root", ());
+```ocaml
+let conn = MySql.Connection.make ~host:"127.0.0.1" ~port:3306 ~user:"root" ()
 
-Mysql.Execute.unnamed(
-  ~connection=conn,
-  ~sql="SELECT 1 + ? + ? as result",
-  ~placeholders=[|5, 6|],
-  (err, rows, fields) =>
-  switch (Js.Nullable.to_opt(err)) {
-  | None =>
-    Js.log(rows);
-    Js.log(fields);
-  | Some(err) => Js.log(err)
-  }
-);
+let logThenClose label x =
+  let _ = Js.log2 label x in
+  MySql.Connection.close conn
 
-Mysql.Connection.end_(conn);
+let _ = MySql.with_params conn "SELECT 1 + ? + ? as result" [|5; 6|] (fun r ->
+  match r with
+  | Response.Error e -> logThenClose "ERROR: " e
+  | Response.Select s -> logThenClose "SELECT: " s
+  | Response.Mutation m -> logThenClose "MUTATION: " m
+)
 ```
 
 ### Promise Interface
-```reason
-let conn =
-  Mysql.Connection.make(~host="127.0.0.1", ~port=3306, ~user="root", ());
+```ocaml
+let conn = MySql.Connection.make ~host:"127.0.0.1" ~port:3306 ~user:"root" ()
 
-/* Here we use the pipe query function (pquery) */
-Js.Promise.resolve(conn)
-|> Mysql.Promise.pquery
-    (~sql="SELECT ? as search", ~placeholders=[|"%schema"|])
-/* Alternatively we could use the normal query method
-|> Js.Promise.then_(Mysql.Promise.query(
-    ~sql="SELECT ? as search",
-    ~placeholders=[|"%something"|]
-  ))
-*/
-|> Js.Promise.then_(value => {
-     Js.log(value);
-     Js.Promise.resolve(1);
-   })
-|> Mysql.Promise.Connection.end_(conn)
-|> Js.Promise.catch((err: Js.Promise.error) => {
-     Js.log2("Failure!!", err);
-     Mysql.Connection.end_(conn);
-     Js.Promise.resolve(-1);
-   });
-
+let _ = Js.Promise.resolve(conn)
+|> MySql.Promise.pipe_with_params "SELECT ? as search" [| "%schema" |]
+|> Js.Promise.then_ (fun value ->
+    let _ = Js.log value in
+    Js.Promise.resolve(1)
+  )
+|> MySql.Connection.Promise.close conn
+|> Js.Promise.catch (fun err ->
+    let _ = Js.log2("Failure!!!", err) in
+    let _ = MySql.Connection.close conn in
+    Js.Promise.resolve(-1)
+  )
 ```
 
 ## How do I install it?

@@ -1,10 +1,5 @@
 type sql = string
 
-type response =
-  | Mutation of Result.mutation
-  | Select of Result.select
-  | Error of exn
-
 type conn = Connection.t
 
 type node_style_err = exn Js.Nullable.t
@@ -53,13 +48,13 @@ end
 
 let parse results fields =
   match Result.parse results fields with
-    | ResultMutation m -> Mutation m
-    | ResultSelect s -> Select s
+    | ResultMutation m -> Response.Mutation m
+    | ResultSelect s -> Response.Select s
 
 let transform err results fields =
   match Js.Nullable.to_opt err with
     | None -> parse results fields
-    | Some e -> Error e
+    | Some e -> Response.Error e
 
 let handler cb err results fields = cb (transform err results fields)
 

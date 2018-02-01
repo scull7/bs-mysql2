@@ -1,4 +1,3 @@
-
 let raw = Driver.query
 
 let with_params conn sql params cb =
@@ -19,7 +18,7 @@ end
 module Promise = struct
   let handler resolve reject response =
     match response with
-    | Driver.Error e -> reject e [@bs]
+    | Response.Error e -> reject e [@bs]
     | any -> resolve any [@bs]
 
   let raw conn sql =
