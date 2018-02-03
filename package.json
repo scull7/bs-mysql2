@@ -9,7 +9,8 @@
     "examples:with-params": "node examples/with_params.bs.js",
     "build": "bsb -make-world",
     "start": "bsb -make-world -w",
-    "clean": "bsb -clean-world"
+    "clean": "bsb -clean-world",
+    "watch:jest": "jest --coverage --watchAll"
   },
   "keywords": [
     "BuckleScript",
@@ -31,6 +32,7 @@
     "mysql2": "^1.5.1"
   },
   "devDependencies": {
-    "@glennsl/bs-jest": "^0.3.3"
+    "@glennsl/bs-jest": "^0.4.0",
+    "@glennsl/bs-json": "^1.1.2"
   }
 }
