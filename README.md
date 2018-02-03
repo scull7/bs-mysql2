@@ -36,6 +36,9 @@ and [Named Placeholders](#named-placeholders).
 
  _* incomplete but usable implementation_
 
+ ***NOTE:*** If you're trying to run the tests on macOS then you will need to:
+ ` brew install watchman`
+
 ## Usage
 
 ### Standard Callback Interface
