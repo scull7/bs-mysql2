@@ -27,3 +27,4 @@ lib/*
 node_modules/
 src/*.js
 examples/*.js
+__tests__/*.js
