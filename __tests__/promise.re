@@ -16,9 +16,8 @@ describe("Test Promise based API", () => {
     |> MySql.Promise.pipe_with_params("SELECT ? AS search", [|"%schema"|])
     |> Js.Promise.then_(results =>
          switch results {
-         | MySql.Response.Error(_) => failwith("unexpected_exception")
-         | MySql.Response.Mutation(_) => failwith("unexpected_mutation_result")
-         | MySql.Response.Select(s) =>
+         | MySql.Promise.Mutation(_) => failwith("unexpected_mutation_result")
+         | MySql.Promise.Select(s) =>
            s.rows
            |> Js.Array.map(decoder)
            |> Js.Array.map(x => x.search)
