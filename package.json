@@ -9,8 +9,9 @@
     "examples:with-params": "node examples/with_params.bs.js",
     "build": "bsb -make-world",
     "clean": "bsb -clean-world",
+    "coverage": "nyc report --temp-directory=coverage --reporter=text-lcov | coveralls",
     "start": "bsb -make-world -w",
-    "test": "yarn run clean; yarn run build; jest --coverage",
+    "test": "yarn run clean; yarn run build; jest --coverage && yarn run coverage",
     "watch:jest": "jest --coverage --watchAll"
   },
   "keywords": [
@@ -34,6 +35,8 @@
   },
   "devDependencies": {
     "@glennsl/bs-jest": "^0.4.0",
-    "@glennsl/bs-json": "^1.1.2"
+    "@glennsl/bs-json": "^1.1.2",
+    "coveralls": "^3.0.0",
+    "nyc": "^11.4.1"
   }
 }
