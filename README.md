@@ -1,4 +1,5 @@
 ![Project Status](https://img.shields.io/badge/status-alpha-red.svg)
+[![Coverage Status](https://coveralls.io/repos/github/scull7/bs-mysql2/badge.svg)](https://coveralls.io/github/scull7/bs-mysql2)
 
 # bs-mysql2
 ReasonML bindings to the [mysql2] library.
