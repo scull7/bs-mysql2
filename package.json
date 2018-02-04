@@ -8,8 +8,9 @@
     "examples:prepared-statements": "node examples/prepared_statements.bs.js",
     "examples:with-params": "node examples/with_params.bs.js",
     "build": "bsb -make-world",
-    "start": "bsb -make-world -w",
     "clean": "bsb -clean-world",
+    "start": "bsb -make-world -w",
+    "test": "yarn run clean; yarn run build; jest --coverage",
     "watch:jest": "jest --coverage --watchAll"
   },
   "keywords": [
