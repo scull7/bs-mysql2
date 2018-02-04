@@ -1,4 +1,5 @@
-![Project Status](https://img.shields.io/badge/status-alpha-red.svg)
+[![NPM](https://nodei.co/npm/bs-mysql2.png)](https://nodei.co/npm/bs-mysql2/)
+[![Build Status](https://travis-ci.org/scull7/bs-mysql2.svg?branch=master)](https://travis-ci.org/scull7/bs-mysql2)
 [![Coverage Status](https://coveralls.io/repos/github/scull7/bs-mysql2/badge.svg)](https://coveralls.io/github/scull7/bs-mysql2)
 
 # bs-mysql2
