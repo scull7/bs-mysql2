@@ -139,7 +139,8 @@ Then add `bs-mysql2` and `bs-mysql-common` to your `bs-dependencies` in `bsconfi
 ```json
 {
   "bs-dependencies": [
-    "bs-mysql2"
+    "bs-mysql2",
+    "bs-mysql-common"
   ]
 }
 ```
