@@ -3,6 +3,7 @@
 [![Coverage Status](https://coveralls.io/repos/github/scull7/bs-mysql2/badge.svg)](https://coveralls.io/github/scull7/bs-mysql2)
 
 # bs-mysql2
+
 ReasonML bindings to the [mysql2] library.
 
 This is a very rough implementation that will enable very simple use cases.
@@ -25,27 +26,49 @@ Not all of the [mysql2] library [features][mysql2-features] are implemented but
 there is a usable implementation of the [Promise based wrapper](#promise-interface)
 and [Named Placeholders](#named-placeholders).
 
- - [x] Faster / Better Performance (_kind of get this for free_)
- - [x] [Prepared Statements][mysql2-prepared-statements] - [examples](#prepared-statements)*
- - [ ] MySQL Binary Log Protocol
- - [ ] [MySQL Server][mysql2-server]
- - [ ] Extended support for Encoding and Collation
- - [x] [Promise Wrapper][mysql2-promise] - [examples](#promise-interface)*
- - [ ] Compression
- - [ ] SSL and [Authentication Switch][mysql2-auth-switch]
- - [ ] [Custom Streams][mysql2-custom-streams]
- - [ ] Pooling
+* [x] Faster / Better Performance (_kind of get this for free_)
+* [x] [Prepared Statements][mysql2-prepared-statements] - [examples](#prepared-statements)\*
+* [ ] MySQL Binary Log Protocol
+* [ ] [MySQL Server][mysql2-server]
+* [ ] Extended support for Encoding and Collation
+* [x] [Promise Wrapper][mysql2-promise] - [examples](#promise-interface)\*
+* [ ] Compression
+* [ ] SSL and [Authentication Switch][mysql2-auth-switch]
+* [ ] [Custom Streams][mysql2-custom-streams]
+* [ ] Pooling
 
- _* incomplete but usable implementation_
+_\* incomplete but usable implementation_
 
- ***NOTE:*** If you're trying to run the tests on macOS then you will need to:
- ` brew install watchman`
+**_NOTE:_** If you're trying to run the tests on macOS then you will need to:
+`brew install watchman`
 
 ## Usage
 
 ### Standard Callback Interface
 
 #### Standard Query Method
+
+##### Reason syntax
+
+```reason
+let conn = MySql.Connection.make(~host="127.0.0.1", ~port=3306, ~user="root", ());
+
+MySql.Query.raw(
+  conn,
+  "SHOW DATABASES",
+  (r) =>
+    switch r {
+    | Response.Error(e) => Js.log2("ERROR: ", e)
+    | Response.Select(s) => Js.log2("SELECT: ", s)
+    | Response.Mutation(m) => Js.log2("MUTATION: ", m)
+    }
+);
+
+MySql.Connection.close(conn);
+```
+
+##### OCaml syntax
+
 ```ocaml
 let conn = MySql.Connection.make ~host:"127.0.0.1" ~port:3306 ~user:"root" ()
 
@@ -61,7 +84,25 @@ let _ = MySql.Connection.close conn
 
 #### Prepared Statements
 
-##### Named Placeholders
+##### Named Placeholders (Reason syntax)
+
+```reason
+let conn =
+  MySql.Connection.make(~host="127.0.0.1", ~port=3306, ~user="root", ());
+
+MySql.Query.with_named_params(conn, "SELECT :x + :y as z", {"x": 1, "y": 2}, result =>
+  switch result {
+  | Error(e) => Js.log2("ERROR: ", e)
+  | Mutation(m) => Js.log2("MUTATION: ", m)
+  | Select(s) => Js.log2("SELECT: ", s)
+  }
+);
+
+MySql.Connection.close(conn);
+```
+
+##### Named Placeholders (OCaml syntax)
+
 ```ocaml
 let conn = MySql.Connection.make ~host:"127.0.0.1" ~port:3306 ~user:"root" ()
 
@@ -79,22 +120,31 @@ let _ = MySql.Query.with_named_params conn sql2 params2 (fun r ->
 )
 ```
 
+##### Unnamed Placeholders (Reason syntax)
+
 ```reason
-let conn =
-  MySql.Connection.make(~host="127.0.0.1", ~port=3306, ~user="root", ());
+let conn = MySql.Connection.make(~host="127.0.0.1", ~port=3306, ~user="root", ());
 
-MySql.Query.with_named_params(conn, "SELECT :x + :y as z", {"x": 1, "y": 2}, result =>
-  switch result {
-  | Error(e) => Js.log2("ERROR: ", e)
-  | Mutation(m) => Js.log2("MUTATION: ", m)
-  | Select(s) => Js.log2("SELECT: ", s)
-  }
+let logThenClose = (label, x) => {
+  let _ = Js.log2(label, x);
+  MySql.Connection.close(conn)
+};
+
+MySql.Query.with_params(
+  conn,
+  "SELECT 1 + ? + ? as result",
+  [|5, 6|],
+  (r) =>
+    switch r {
+    | Response.Error(e) => logThenClose("ERROR: ", e)
+    | Response.Select(s) => logThenClose("SELECT: ", s)
+    | Response.Mutation(m) => logThenClose("MUTATION: ", m)
+    }
 );
-
-MySql.Connection.close(conn);
 ```
 
-##### Unnamed Placeholders
+##### Unnamed Placeholders (OCaml syntax)
+
 ```ocaml
 let conn = MySql.Connection.make ~host:"127.0.0.1" ~port:3306 ~user:"root" ()
 
@@ -111,6 +161,32 @@ let _ = MySql.Query.with_params conn "SELECT 1 + ? + ? as result" [|5; 6|] (fun 
 ```
 
 ### Promise Interface
+
+#### Reason syntax
+
+```reason
+let conn = MySql.Connection.make(~host="127.0.0.1", ~port=3306, ~user="root", ());
+
+Js.Promise.resolve(conn)
+|> MySql.Promise.pipe_with_params("SELECT ? as search", [|"%schema"|])
+|> Js.Promise.then_(
+     (value) => {
+       let _ = Js.log(value);
+       Js.Promise.resolve(1)
+     }
+   )
+|> MySql.Connection.Promise.close(conn)
+|> Js.Promise.catch(
+     (err) => {
+       let _ = Js.log2(("Failure!!!", err));
+       let _ = MySql.Connection.close(conn);
+       Js.Promise.resolve((-1))
+     }
+   );
+```
+
+#### Ocaml syntax
+
 ```ocaml
 let conn = MySql.Connection.make ~host:"127.0.0.1" ~port:3306 ~user:"root" ()
 
@@ -131,32 +207,35 @@ let _ = Js.Promise.resolve(conn)
 ## How do I install it?
 
 Inside of a BuckleScript project:
+
 ```shell
 yarn install --save bs-mysql2
 ```
 
 Then add `bs-mysql2` and `bs-mysql-common` to your `bs-dependencies` in `bsconfig.json`:
+
 ```json
 {
-  "bs-dependencies": [
-    "bs-mysql2",
-    "bs-mysql-common"
-  ]
+  "bs-dependencies": ["bs-mysql2", "bs-mysql-common"]
 }
 ```
 
 ## How do I use it?
 
 ### Use it in your project
+
 See the [Usage](#usage) section above...
 
 ### Run the examples
+
 ```shell
 yarn run examples:simple
 ```
+
 ```shell
 yarn run examples:promise
 ```
+
 ```shell
 yarn run examples:prepared-statements
 ```
