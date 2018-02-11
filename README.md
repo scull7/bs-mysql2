@@ -135,7 +135,7 @@ Inside of a BuckleScript project:
 yarn install --save bs-mysql2
 ```
 
-Then add `bs-mysql2` to your `bs-dependencies` in `bsconfig.json`:
+Then add `bs-mysql2` and `bs-mysql-common` to your `bs-dependencies` in `bsconfig.json`:
 ```json
 {
   "bs-dependencies": [
