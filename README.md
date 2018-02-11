@@ -82,9 +82,9 @@ let _ = MySql.Query.raw conn "SHOW DATABASES" (fun r ->
 let _ = MySql.Connection.close conn
 ```
 
-#### Prepared Statements
+#### Prepared Statements - Named Placeholders
 
-##### Named Placeholders (Reason syntax)
+##### Reason syntax
 
 ```reason
 let conn =
@@ -101,7 +101,7 @@ MySql.Query.with_named_params(conn, "SELECT :x + :y as z", {"x": 1, "y": 2}, res
 MySql.Connection.close(conn);
 ```
 
-##### Named Placeholders (OCaml syntax)
+##### OCaml syntax
 
 ```ocaml
 let conn = MySql.Connection.make ~host:"127.0.0.1" ~port:3306 ~user:"root" ()
@@ -120,7 +120,9 @@ let _ = MySql.Query.with_named_params conn sql2 params2 (fun r ->
 )
 ```
 
-##### Unnamed Placeholders (Reason syntax)
+#### Prepared Statements - Un-named Placeholders
+
+##### Reason syntax
 
 ```reason
 let conn = MySql.Connection.make(~host="127.0.0.1", ~port=3306, ~user="root", ());
@@ -143,7 +145,7 @@ MySql.Query.with_params(
 );
 ```
 
-##### Unnamed Placeholders (OCaml syntax)
+##### OCaml syntax
 
 ```ocaml
 let conn = MySql.Connection.make ~host:"127.0.0.1" ~port:3306 ~user:"root" ()
@@ -162,7 +164,7 @@ let _ = MySql.Query.with_params conn "SELECT 1 + ? + ? as result" [|5; 6|] (fun 
 
 ### Promise Interface
 
-#### Reason syntax
+##### Reason syntax
 
 ```reason
 let conn = MySql.Connection.make(~host="127.0.0.1", ~port=3306, ~user="root", ());
@@ -185,7 +187,7 @@ Js.Promise.resolve(conn)
    );
 ```
 
-#### Ocaml syntax
+##### Ocaml syntax
 
 ```ocaml
 let conn = MySql.Connection.make ~host:"127.0.0.1" ~port:3306 ~user:"root" ()
