@@ -29,3 +29,4 @@ src/*.js
 examples/*.js
 __tests__/*.js
 coverage
+*.log
