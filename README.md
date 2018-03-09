@@ -3,6 +3,7 @@
 [![Coverage Status](https://coveralls.io/repos/github/scull7/bs-mysql2/badge.svg)](https://coveralls.io/github/scull7/bs-mysql2)
 
 # bs-mysql2
+
 ReasonML bindings to the [mysql2] library.
 
 This is a very rough implementation that will enable very simple use cases.
@@ -70,7 +71,26 @@ MySql2.execute(conn, "SHOW DATABASES", None, (exn, res, meta) => {
 
 ```
 
-#### Prepared Statements
+#### Prepared Statements - Named Placeholders
+
+##### Reason syntax
+
+```reason
+let conn =
+  MySql.Connection.make(~host="127.0.0.1", ~port=3306, ~user="root", ());
+
+MySql.Query.with_named_params(conn, "SELECT :x + :y as z", {"x": 1, "y": 2}, result =>
+  switch result {
+  | Error(e) => Js.log2("ERROR: ", e)
+  | Mutation(m) => Js.log2("MUTATION: ", m)
+  | Select(s) => Js.log2("SELECT: ", s)
+  }
+);
+
+MySql.Connection.close(conn);
+```
+
+##### OCaml syntax
 
 ##### Named Placeholders
 ```reason
@@ -124,28 +144,31 @@ MySql2.execute(conn, "SELECT :x + :y AS result", positional, (exn, res, meta) =>
 ## How do I install it?
 
 Inside of a BuckleScript project:
+
 ```shell
 yarn install --save bs-mysql2
 ```
 
-Then add `bs-mysql2` to your `bs-dependencies` in `bsconfig.json`:
+Then add `bs-mysql2` and `bs-mysql-common` to your `bs-dependencies` in `bsconfig.json`:
+
 ```json
 {
-  "bs-dependencies": [
-    "bs-mysql2"
-  ]
+  "bs-dependencies": ["bs-mysql2", "bs-mysql-common"]
 }
 ```
 
 ## How do I use it?
 
 ### Use it in your project
+
 See the [Usage](#usage) section above...
 
 ### Run the examples
+
 ```shell
 yarn run examples:simple
 ```
+
 ```shell
 yarn run examples:prepared-statements
 ```
