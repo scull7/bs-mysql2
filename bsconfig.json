@@ -1,6 +1,6 @@
 {
   "name": "bs-mysql2",
-  "version": "0.1.0",
+  "version": "2.0.0",
   "package-specs": {
     "module": "commonjs",
     "in-source": true
@@ -17,8 +17,8 @@
       "type": "dev"
     }
   ],
-  "bs-dev-dependencies": [ "@glennsl/bs-jest", "@glennsl/bs-json" ],
-  "bs-dependencies": [ "bs-sql-common" ],
-  "bsc-flags": [ "-bs-no-version-header", "-bs-super-errors" ],
+  "bs-dev-dependencies": [ "@glennsl/bs-jest" ],
+  "bs-dependencies": [ "@glennsl/bs-json" ],
+  "bsc-flags": [ "-bs-super-errors" ],
   "refmt": 3
 }

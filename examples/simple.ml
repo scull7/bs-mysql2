@@ -1,11 +1,15 @@
-let conn = MySql.Connection.make ~host:"127.0.0.1" ~port:3306 ~user:"root" ()
+let conn = MySql2.Connection.make ~host:"127.0.0.1" ~port:3306 ~user:"root" ()
 
-let test_handler = function
-  | Response.Error e -> Js.log2 "ERROR: " e
-  | Response.Select s -> Js.log2 "SELECT: " s
-  | Response.Mutation m -> Js.log2 "MUTATION: " m
+let test_handler exn res meta =
+  match (Js.Nullable.toOption exn) with
+  | Some e -> Js.log2 "ERROR: " e
+  | None ->
+    match (MySql2.parse_response res meta) with
+    | `Error e -> Js.log2 "ERROR: " e
+    | `Select (rows, meta) -> Js.log3 "SELECT: " rows meta
+    | `Mutation (count, id) -> Js.log3 "MUTATION: " count id
 
-let _ = MySql.Query.raw conn "SHOW DATABASES" test_handler
+let _ = MySql2.execute conn "SHOW DATABASES" None test_handler
 
 let table_sql = {|
   CREATE TABLE IF NOT EXISTS test.simple (
@@ -15,21 +19,22 @@ let table_sql = {|
   )
 |}
 
-let _ = MySql.Query.raw conn table_sql test_handler
+let _ = MySql2.execute conn table_sql None test_handler
 
 let simple_insert_sql = "INSERT INTO test.simple (code) VALUES ('foo')"
 
-let _ = MySql.Query.raw conn simple_insert_sql test_handler
+let _ = MySql2.execute conn simple_insert_sql None test_handler
 
 let simple_update_sql = "UPDATE test.simple SET code='foo2' WHERE code='foo'"
 
-let _ = MySql.Query.raw conn simple_update_sql test_handler
+let _ = MySql2.execute conn simple_update_sql None test_handler
 
-let _ = MySql.Query.raw
+let _ = MySql2.execute
   conn
   "SELECT NULL FROM test.simple WHERE false"
+  None
   test_handler
 
-let _ = MySql.Query.raw conn "SELECT * FROM test.simple" test_handler
+let _ = MySql2.execute conn "SELECT * FROM test.simple" None test_handler
 
-let _ = MySql.Connection.close conn
+let _ = MySql2.Connection.close conn

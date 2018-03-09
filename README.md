@@ -16,8 +16,15 @@ use of the [mysql2] library / driver over the [mysql] (version 1) driver. You
 can see the reasoning behind the new [mysql2] driver here:
 [History and Why MySQL2][mysql2-features]
 
-Also, hopefully, the interface presented feels more conventional
-for ReasonmML / OCaml
+### Version 2
+
+Version 2 of this driver removed most of the API surface area.  This is now
+intended as a module which better interfaces are built on top of, yet it still
+quite usable.
+
+However, if you are looking for a higher level interface then you should look
+at the [bs-sql-common] library. This library can be used along side
+[bs-sql-common] as a data provider.
 
 ## Status
 
@@ -26,17 +33,15 @@ there is a usable implementation of the [Promise based wrapper](#promise-interfa
 and [Named Placeholders](#named-placeholders).
 
  - [x] Faster / Better Performance (_kind of get this for free_)
- - [x] [Prepared Statements][mysql2-prepared-statements] - [examples](#prepared-statements)*
+ - [x] [Prepared Statements][mysql2-prepared-statements] - [examples](#prepared-statements)
  - [ ] MySQL Binary Log Protocol
  - [ ] [MySQL Server][mysql2-server]
  - [ ] Extended support for Encoding and Collation
- - [x] [Promise Wrapper][mysql2-promise] - [examples](#promise-interface)*
+ - [ ] [Promise Wrapper][mysql2-promise] - [examples](#promise-interface)
  - [ ] Compression
  - [ ] SSL and [Authentication Switch][mysql2-auth-switch]
  - [ ] [Custom Streams][mysql2-custom-streams]
  - [ ] Pooling
-
- _* incomplete but usable implementation_
 
  ***NOTE:*** If you're trying to run the tests on macOS then you will need to:
  ` brew install watchman`
@@ -46,86 +51,74 @@ and [Named Placeholders](#named-placeholders).
 ### Standard Callback Interface
 
 #### Standard Query Method
-```ocaml
-let conn = MySql.Connection.make ~host:"127.0.0.1" ~port:3306 ~user:"root" ()
+```reason
+let conn
+  = MySql2.Connection.make(~host=127.0.0.1, ~port=3306, ~user="root", ());
 
-let _ = MySql.Query.raw conn "SHOW DATABASES" (fun r ->
-  match r with
-  | Response.Error e -> Js.log2 "ERROR: " e
-  | Response.Select s -> Js.log2 "SELECT: " s
-  | Response.Mutation m -> Js.log2 "MUTATION: " m
-)
+MySql2.execute(conn, "SHOW DATABASES", None, (exn, res, meta) => {
+  switch (Js.Nullable.toOption(exn)) {
+  | Some(e) => Js.log2("ERROR: ", e)
+  | None =>
+    switch (MySql2.parse_response(res, meta)) {
+    | `Error(e) => Js.log2("ERROR: ", e)
+    | `Select(rows, meta) => Js.log3("SELECT: ", rows, meta)
+    | `Mutation(count, id) => Js.log3("MUTATION: ", count, id)
+    }
+  }
+  MySql.Connection.close(conn);
+});
 
-let _ = MySql.Connection.close conn
 ```
 
 #### Prepared Statements
 
 ##### Named Placeholders
-```ocaml
-let conn = MySql.Connection.make ~host:"127.0.0.1" ~port:3306 ~user:"root" ()
-
-let logThenClose label x =
-  let _ = Js.log2 label x in
-  MySql.Connection.close conn
-
-let sql2 = "SELECT :x + :y as z"
-let params2 = [%bs.obj {x = 1; y = 2}]
-let _ = MySql.Query.with_named_params conn sql2 params2 (fun r ->
-  match r with
-  | Response.Error e -> logThenClose "ERROR: " e
-  | Response.Select s -> logThenClose "SELECT: " s
-  | Response.Mutation m -> logThenClose "MUTATION: " m
-)
-```
-
 ```reason
-let conn =
-  MySql.Connection.make(~host="127.0.0.1", ~port=3306, ~user="root", ());
+let conn
+  = MySql2.Connection.make(~host=127.0.0.1, ~port=3306, ~user="root", ());
 
-MySql.Query.with_named_params(conn, "SELECT :x + :y as z", {"x": 1, "y": 2}, result =>
-  switch result {
-  | Error(e) => Js.log2("ERROR: ", e)
-  | Mutation(m) => Js.log2("MUTATION: ", m)
-  | Select(s) => Js.log2("SELECT: ", s)
+let named = Some(`Named(
+  Json.Encode.object_([
+    ("x", Json.Encode.int(1)),
+    ("y", Json.Encode.int(2)),
+  ])
+));
+
+MySql2.execute(conn, "SELECT :x + :y AS result", named, (exn, res, meta) => {
+  switch (Js.Nullable.toOption(exn)) {
+  | Some(e) => Js.log2("ERROR: ", e)
+  | None =>
+    switch (MySql2.parse_response(res, meta)) {
+    | `Error(e) => Js.log2("ERROR: ", e)
+    | `Select(rows, meta) => Js.log3("SELECT: ", rows, meta)
+    | `Mutation(count, id) => Js.log3("MUTATION: ", count, id)
+    }
   }
-);
-
-MySql.Connection.close(conn);
+  MySql.Connection.close(conn);
+});
 ```
 
 ##### Unnamed Placeholders
-```ocaml
-let conn = MySql.Connection.make ~host:"127.0.0.1" ~port:3306 ~user:"root" ()
+```reason
+let conn
+  = MySql2.Connection.make(~host=127.0.0.1, ~port=3306, ~user="root", ());
 
-let logThenClose label x =
-  let _ = Js.log2 label x in
-  MySql.Connection.close conn
+let positional = Some(`Anonymous(
+  Belt_Array.map([|5, 6|], Json.Encode.int) |> Json.Encode.jsonArray
+));
 
-let _ = MySql.Query.with_params conn "SELECT 1 + ? + ? as result" [|5; 6|] (fun r ->
-  match r with
-  | Response.Error e -> logThenClose "ERROR: " e
-  | Response.Select s -> logThenClose "SELECT: " s
-  | Response.Mutation m -> logThenClose "MUTATION: " m
-)
-```
-
-### Promise Interface
-```ocaml
-let conn = MySql.Connection.make ~host:"127.0.0.1" ~port:3306 ~user:"root" ()
-
-let _ = Js.Promise.resolve(conn)
-|> MySql.Promise.pipe_with_params "SELECT ? as search" [| "%schema" |]
-|> Js.Promise.then_ (fun value ->
-    let _ = Js.log value in
-    Js.Promise.resolve(1)
-  )
-|> MySql.Connection.Promise.close conn
-|> Js.Promise.catch (fun err ->
-    let _ = Js.log2("Failure!!!", err) in
-    let _ = MySql.Connection.close conn in
-    Js.Promise.resolve(-1)
-  )
+MySql2.execute(conn, "SELECT :x + :y AS result", positional, (exn, res, meta) => {
+  switch (Js.Nullable.toOption(exn)) {
+  | Some(e) => Js.log2("ERROR: ", e)
+  | None =>
+    switch (MySql2.parse_response(res, meta)) {
+    | `Error(e) => Js.log2("ERROR: ", e)
+    | `Select(rows, meta) => Js.log3("SELECT: ", rows, meta)
+    | `Mutation(count, id) => Js.log3("MUTATION: ", count, id)
+    }
+  }
+  MySql.Connection.close(conn);
+});
 ```
 
 ## How do I install it?
@@ -154,9 +147,6 @@ See the [Usage](#usage) section above...
 yarn run examples:simple
 ```
 ```shell
-yarn run examples:promise
-```
-```shell
 yarn run examples:prepared-statements
 ```
 
@@ -165,6 +155,7 @@ yarn run examples:prepared-statements
 Mostly everything...
 
 [bs-mysql]: https://github.com/davidgomes/bs-mysql
+[bs-sql-common]: https://github.com/scull7/bs-sql-common
 [mysql]: https://www.npmjs.com/package/mysql
 [mysql2]: https://www.npmjs.com/package/mysql2
 [mysql2-features]: https://github.com/sidorares/node-mysql2#history-and-why-mysql2
