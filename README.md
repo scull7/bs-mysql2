@@ -56,65 +56,39 @@ and [Named Placeholders](#named-placeholders).
 let conn
   = MySql2.Connection.make(~host=127.0.0.1, ~port=3306, ~user="root", ());
 
-MySql2.execute(conn, "SHOW DATABASES", None, (exn, res, meta) => {
-  switch (Js.Nullable.toOption(exn)) {
-  | Some(e) => Js.log2("ERROR: ", e)
-  | None =>
-    switch (MySql2.parse_response(res, meta)) {
+MySql2.execute(conn, "SHOW DATABASES", None, res => {
+    switch res {
     | `Error(e) => Js.log2("ERROR: ", e)
     | `Select(rows, meta) => Js.log3("SELECT: ", rows, meta)
     | `Mutation(count, id) => Js.log3("MUTATION: ", count, id)
     }
-  }
-  MySql.Connection.close(conn);
+  MySql2.Connection.close(conn);
 });
 
 ```
 
-#### Prepared Statements - Named Placeholders
-
-##### Reason syntax
-
-```reason
-let conn =
-  MySql.Connection.make(~host="127.0.0.1", ~port=3306, ~user="root", ());
-
-MySql.Query.with_named_params(conn, "SELECT :x + :y as z", {"x": 1, "y": 2}, result =>
-  switch result {
-  | Error(e) => Js.log2("ERROR: ", e)
-  | Mutation(m) => Js.log2("MUTATION: ", m)
-  | Select(s) => Js.log2("SELECT: ", s)
-  }
-);
-
-MySql.Connection.close(conn);
-```
-
-##### OCaml syntax
+#### Prepared Statements
 
 ##### Named Placeholders
 ```reason
 let conn
   = MySql2.Connection.make(~host=127.0.0.1, ~port=3306, ~user="root", ());
 
-let named = Some(`Named(
+let named = `Named(
   Json.Encode.object_([
     ("x", Json.Encode.int(1)),
     ("y", Json.Encode.int(2)),
   ])
-));
+);
 
-MySql2.execute(conn, "SELECT :x + :y AS result", named, (exn, res, meta) => {
-  switch (Js.Nullable.toOption(exn)) {
-  | Some(e) => Js.log2("ERROR: ", e)
-  | None =>
-    switch (MySql2.parse_response(res, meta)) {
+MySql2.execute(conn, "SELECT :x + :y AS result", Some(named), res => {
+    switch res {
     | `Error(e) => Js.log2("ERROR: ", e)
     | `Select(rows, meta) => Js.log3("SELECT: ", rows, meta)
     | `Mutation(count, id) => Js.log3("MUTATION: ", count, id)
     }
   }
-  MySql.Connection.close(conn);
+  MySql2.Connection.close(conn);
 });
 ```
 
@@ -123,21 +97,18 @@ MySql2.execute(conn, "SELECT :x + :y AS result", named, (exn, res, meta) => {
 let conn
   = MySql2.Connection.make(~host=127.0.0.1, ~port=3306, ~user="root", ());
 
-let positional = Some(`Anonymous(
+let positional = `Positional(
   Belt_Array.map([|5, 6|], Json.Encode.int) |> Json.Encode.jsonArray
-));
+);
 
-MySql2.execute(conn, "SELECT :x + :y AS result", positional, (exn, res, meta) => {
-  switch (Js.Nullable.toOption(exn)) {
-  | Some(e) => Js.log2("ERROR: ", e)
-  | None =>
-    switch (MySql2.parse_response(res, meta)) {
+MySql2.execute(conn, "SELECT 1 + ? + ? AS result", Some(positional), res => {
+    switch res {
     | `Error(e) => Js.log2("ERROR: ", e)
     | `Select(rows, meta) => Js.log3("SELECT: ", rows, meta)
     | `Mutation(count, id) => Js.log3("MUTATION: ", count, id)
     }
   }
-  MySql.Connection.close(conn);
+  MySql2.Connection.close(conn);
 });
 ```
 
