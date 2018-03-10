@@ -13,38 +13,20 @@ type thing = {
   code: string
 };
 
-let message = (exn) =>
-  switch (Js.Exn.message(exn)) {
-  | Some(message) => message
-  | None => switch (Js.Exn.name(exn)) {
-      | Some(name) => name
-      | None => "Unknown Error"
-      }
-  }
-;
+let raiseError = (exn) => exn |> MySql2.Error.message |> Js.Exn.raiseError;
 
-let raiseError = (exn) => exn |> message |> Js.Exn.raiseError;
+let onSelect = (next, fn, res) =>
+  switch res {
+  | `Error(e) => MySql2.Error.message(e) |> fail |> next
+  | `Mutation(_) => fail("unexpected_mutation_result") |> next
+  | `Select(rows, meta) => fn(rows, meta, next)
+};
 
-let onSelect = (next, fn, exn, res, meta) =>
-  switch (Js.Nullable.toOption(exn)) {
-  | Some(e) => message(e) |> fail |> next
-  | None =>
-    switch (MySql2.parse_response(res, meta)) {
-    | `Error(e) => message(e) |> fail |> next
-    | `Mutation(_) => fail("unexpected_mutation_result") |> next
-    | `Select(rows, meta) => fn(rows, meta, next)
-    };
-  };
-
-let onMutation = (next, fn, exn, res, meta) =>
-  switch (Js.Nullable.toOption(exn)) {
-  | Some(e)=> message(e) |> fail |> next
-  | None =>
-    switch (MySql2.parse_response(res, meta)) {
-    | `Error(e) => message(e) |> fail |> next
-    | `Mutation(count, id) => fn(count, id, next)
-    | `Select(_, _) => fail("unexpected_select_result") |> next
-    }
+let onMutation = (next, fn, res) =>
+  switch res {
+  | `Error(e) => MySql2.Error.message(e) |> fail |> next
+  | `Mutation(count, id) => fn(count, id, next)
+  | `Select(_, _) => fail("unexpected_select_result") |> next
   };
 
 describe("Raw SQL Query Test", () => {
@@ -72,27 +54,19 @@ describe("Raw SQL Query Test Sequence", () => {
     )
   |};
   let drop = next =>
-    MySql2.execute(conn, "DROP TABLE IF EXISTS `test`.`simple`", None, (exn, res, meta) =>
-      switch (Js.Nullable.toOption(exn)) {
-      | Some(e) => e |> raiseError(e)
-      | None =>
-        switch (MySql2.parse_response(res, meta)) {
-        | `Error(e) => raiseError(e)
-        | `Mutation(_,_) => next()
-        | `Select(_,_) => failwith("unexpected_select_result")
-        }
+    MySql2.execute(conn, "DROP TABLE IF EXISTS `test`.`simple`", None, (res) =>
+      switch (res) {
+      | `Error(e) => raiseError(e)
+      | `Mutation(_,_) => next()
+      | `Select(_,_) => failwith("unexpected_select_result")
       }
     );
   let create = next =>
-    MySql2.execute(conn, table_sql, None, (exn, res, meta) =>
-      switch (Js.Nullable.toOption(exn)) {
-      | Some(e) => raiseError(e)
-      | None =>
-        switch (MySql2.parse_response(res, meta)) {
-        | `Error(e) => raiseError(e)
-        | `Mutation(_,_) => next()
-        | `Select(_,_) => failwith("unexpected_select_result")
-        }
+    MySql2.execute(conn, table_sql, None, (res) =>
+      switch (res) {
+      | `Error(e) => raiseError(e)
+      | `Mutation(_,_) => next()
+      | `Select(_,_) => failwith("unexpected_select_result")
       }
     );
   beforeAllAsync(finish => drop(() => create(finish)));

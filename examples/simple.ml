@@ -1,13 +1,10 @@
 let conn = MySql2.Connection.make ~host:"127.0.0.1" ~port:3306 ~user:"root" ()
 
-let test_handler exn res meta =
-  match (Js.Nullable.toOption exn) with
-  | Some e -> Js.log2 "ERROR: " e
-  | None ->
-    match (MySql2.parse_response res meta) with
-    | `Error e -> Js.log2 "ERROR: " e
-    | `Select (rows, meta) -> Js.log3 "SELECT: " rows meta
-    | `Mutation (count, id) -> Js.log3 "MUTATION: " count id
+let test_handler res =
+  match res with
+  | `Error e -> Js.log2 "ERROR: " e
+  | `Select (rows, meta) -> Js.log3 "SELECT: " rows meta
+  | `Mutation (count, id) -> Js.log3 "MUTATION: " count id
 
 let _ = MySql2.execute conn "SHOW DATABASES" None test_handler
 
