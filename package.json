@@ -30,9 +30,6 @@
   "author": "Nathan Sculli <scull7@gmail.com>",
   "license": "MIT",
   "dependencies": {
-    "@glennsl/bs-json": "^1.1.3",
-    "bs-platform": "^2.2.2",
-    "global": "^4.3.2",
     "mysql2": "^1.5.1"
   },
   "devDependencies": {
