@@ -9,4 +9,5 @@ before_install:
   - mysql -e 'CREATE DATABASE IF NOT EXISTS test;'
 before_script:
   - yarn global add bs-platform@latest
+  - yarn link bs-platform
   - yarn add @glennsl/bs-json@latest
