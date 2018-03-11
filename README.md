@@ -117,14 +117,14 @@ MySql2.execute(conn, "SELECT 1 + ? + ? AS result", Some(positional), res => {
 Inside of a BuckleScript project:
 
 ```shell
-yarn install --save bs-mysql2
+yarn install --save bs-mysql2 @glennsl/bs-json
 ```
 
-Then add `bs-mysql2` and `bs-mysql-common` to your `bs-dependencies` in `bsconfig.json`:
+Then add `bs-mysql2` and `@glennsl/bs-json` to your `bs-dependencies` in `bsconfig.json`:
 
 ```json
 {
-  "bs-dependencies": ["bs-mysql2", "bs-mysql-common"]
+  "bs-dependencies": ["bs-mysql2", "@glennsl/bs-json"]
 }
 ```
 
