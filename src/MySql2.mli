@@ -20,16 +20,6 @@ type meta = meta_record array
 
 module Connection : sig
   type t
-
-  val make :
-    ?host:string ->
-    ?port:int ->
-    ?user:string ->
-    ?password:string ->
-    ?database:string ->
-    unit -> t
-
-  val close : t -> unit
 end
 
 module Error : sig
@@ -45,6 +35,14 @@ type callback =
   unit
 
 val close : Connection.t -> unit
+
+val connect :
+    ?host:string ->
+    ?port:int ->
+    ?user:string ->
+    ?password:string ->
+    ?database:string ->
+    unit -> connection
 
 val execute : Connection.t -> string -> params -> callback -> unit
 

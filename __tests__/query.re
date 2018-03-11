@@ -1,7 +1,7 @@
 open Jest;
 
 let connect = () =>
-  MySql2.Connection.make(~host="127.0.0.1", ~port=3306, ~user="root", ());
+  MySql2.connect(~host="127.0.0.1", ~port=3306, ~user="root", ());
 
 type insert = {
   affected_rows: int,

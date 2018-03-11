@@ -1,6 +1,6 @@
 
 let conn =
-  MySql2.Connection.make(~host="127.0.0.1", ~port=3306, ~user="root", ());
+  MySql2.connect(~host="127.0.0.1", ~port=3306, ~user="root", ());
 
 let positional = Some(`Positional(
   Belt_Array.map([|5,6|], Json.Encode.int) |> Json.Encode.jsonArray

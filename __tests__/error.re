@@ -1,7 +1,7 @@
 open Jest;
 
 let connect = () =>
-  MySql2.Connection.make(~host="127.0.0.1", ~port=3306, ~user="root", ());
+  MySql2.connect(~host="127.0.0.1", ~port=3306, ~user="root", ());
 
 describe("MySql2 Error Handling", () => {
   let conn = connect();
@@ -10,7 +10,7 @@ describe("MySql2 Error Handling", () => {
 
   let accessDeniedTest = "Should respond with an access denied error";
   testAsync(accessDeniedTest, finish => {
-    let c = MySql2.Connection.make(~password="s0m3 g@rb@g3 pw", ());
+    let c = MySql2.connect(~password="s0m3 g@rb@g3 pw", ());
     let sql = "SELECT 1+1 AS result";
     MySql2.execute(c, sql, None, res => {
       switch res {

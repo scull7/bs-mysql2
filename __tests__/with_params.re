@@ -1,7 +1,7 @@
 open Jest;
 
 let connect = () =>
-  MySql2.Connection.make(~host="127.0.0.1", ~port=3306, ~user="root", ~password="", ~database="test", ());
+  MySql2.connect(~host="127.0.0.1", ~port=3306, ~user="root", ~password="", ~database="test", ());
 
 type result = {result: int};
 
@@ -10,7 +10,7 @@ describe("Test parameter interpolation", () => {
   let decoder = json => Json.Decode.({
     result: json |> field("result", int)
   });
-  afterAll(() => MySql2.Connection.close(conn));
+  afterAll(() => MySql2.close(conn));
   describe("Standard (positional) parameters", () => {
     testAsync("Expect parameters to be substituted properly", finish => {
       let sql = "SELECT 1 + ? + ? AS result";

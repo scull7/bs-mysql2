@@ -54,7 +54,7 @@ and [Named Placeholders](#named-placeholders).
 #### Standard Query Method
 ```reason
 let conn
-  = MySql2.Connection.make(~host=127.0.0.1, ~port=3306, ~user="root", ());
+  = MySql2.connect(~host=127.0.0.1, ~port=3306, ~user="root", ());
 
 MySql2.execute(conn, "SHOW DATABASES", None, res => {
     switch res {
@@ -62,7 +62,7 @@ MySql2.execute(conn, "SHOW DATABASES", None, res => {
     | `Select(rows, meta) => Js.log3("SELECT: ", rows, meta)
     | `Mutation(count, id) => Js.log3("MUTATION: ", count, id)
     }
-  MySql2.Connection.close(conn);
+  MySql2.close(conn);
 });
 
 ```
@@ -72,7 +72,7 @@ MySql2.execute(conn, "SHOW DATABASES", None, res => {
 ##### Named Placeholders
 ```reason
 let conn
-  = MySql2.Connection.make(~host=127.0.0.1, ~port=3306, ~user="root", ());
+  = MySql2.connect(~host=127.0.0.1, ~port=3306, ~user="root", ());
 
 let named = `Named(
   Json.Encode.object_([
@@ -88,14 +88,14 @@ MySql2.execute(conn, "SELECT :x + :y AS result", Some(named), res => {
     | `Mutation(count, id) => Js.log3("MUTATION: ", count, id)
     }
   }
-  MySql2.Connection.close(conn);
+  MySql2.close(conn);
 });
 ```
 
 ##### Unnamed Placeholders
 ```reason
 let conn
-  = MySql2.Connection.make(~host=127.0.0.1, ~port=3306, ~user="root", ());
+  = MySql2.connect(~host=127.0.0.1, ~port=3306, ~user="root", ());
 
 let positional = `Positional(
   Belt_Array.map([|5, 6|], Json.Encode.int) |> Json.Encode.jsonArray
@@ -108,7 +108,7 @@ MySql2.execute(conn, "SELECT 1 + ? + ? AS result", Some(positional), res => {
     | `Mutation(count, id) => Js.log3("MUTATION: ", count, id)
     }
   }
-  MySql2.Connection.close(conn);
+  MySql2.close(conn);
 });
 ```
 

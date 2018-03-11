@@ -1,4 +1,4 @@
-let conn = MySql2.Connection.make ~host:"127.0.0.1" ~port:3306 ~user:"root" ()
+let conn = MySql2.connect ~host:"127.0.0.1" ~port:3306 ~user:"root" ()
 
 let test_handler res =
   match res with
@@ -34,4 +34,4 @@ let _ = MySql2.execute
 
 let _ = MySql2.execute conn "SELECT * FROM test.simple" None test_handler
 
-let _ = MySql2.Connection.close conn
+let _ = MySql2.close conn

@@ -124,6 +124,7 @@ let result_select rows meta = `Select (
 )
 
 let close = Connection.close
+let connect = Connection.make
 
 external execute :
   Connection.t ->
