@@ -42,15 +42,6 @@ module Options = struct
 end
 
 module Error = struct
-  type t = {
-    name:string;
-    message:string;
-    code:string;
-    errno:int;
-    sql_state:string option;
-    sql_message:string option;
-  }
-
   let default_code = "99999"
   let default_errno = 99999
   let default_message = "EMPTY_MESSAGE"
@@ -65,37 +56,19 @@ module Error = struct
   external sql_message : Js.Exn.t -> string Js.Nullable.t = "sqlMessage"
   [@@bs.get]
 
-  let make
-    ~(name:string)
-    ~(message:string)
-    ?(code=default_code)
-    ?(errno=default_errno)
-    ?(sql_state:string option)
-    ?(sql_message:string option)
-    _ =
-    { name; message; code; errno; sql_state; sql_message; }
+  let with_default default nullable =
+    nullable
+    |> Js.Nullable.toOption
+    |> Js.Option.getWithDefault default
 
-  let null_with_default default nullable =
-    match (Js.Nullable.toOption(nullable)) with
-    | Some x -> x
-    | None -> default
-
-
-  let from_js exn = {
-    name = exn |> name |> null_with_default default_name;
-    message = exn |> message |> null_with_default default_message;
-    code = exn |> code |> null_with_default default_code;
-    errno = exn |> errno |> null_with_default default_errno;
-    sql_state = exn |> sql_state |> Js.Nullable.toOption;
-    sql_message = exn |> sql_message |> Js.Nullable.toOption;
-  }
-
-  let name exn = exn.name
-  let message exn = exn.message
-  let code exn = exn.code
-  let errno exn = exn.errno
-  let sql_state exn = exn.sql_state
-  let sql_message exn = exn.sql_message
+  let from_js exn =
+    let name = exn |> name |> with_default default_name in
+    let message = exn |> message |> with_default default_message in
+    let code = exn |> code |> with_default default_code in
+    let errno = exn |> errno |> with_default default_errno in
+    let sql_state = exn |> sql_state in
+    let sql_message = exn |> sql_message in
+    Failure {j|$name - $code ($errno) - $message - ($sql_state) $sql_message|j}
 end
 
 type connection = Connection.t
@@ -119,7 +92,7 @@ type params =
   ] option
 type rows = Js.Json.t array
 type callback =
-  [ `Error of Error.t
+  [ `Error of exn
   | `Mutation of int * int
   | `Select of rows * meta
   ] ->
@@ -163,11 +136,9 @@ let parse_response json meta =
   match Js.Json.classify json with
   | Js.Json.JSONObject _ -> result_mutation json
   | Js.Json.JSONArray rows -> result_select rows meta
-  | _ ->`Error (Error.make
-    ~name:"UNKNOWN_RESPONSE_TYPE"
-    ~message:"invalid_driver_result"
-    ()
-  )
+  | _ -> `Error (Failure
+      {|MySql2Error - (UNKNOWN_RESPONSE_TYPE) - invalid_driver_result|}
+    )
 
 let execute conn sql params callback =
   let options = Options.from_params sql params in

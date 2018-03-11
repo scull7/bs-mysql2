@@ -33,19 +33,12 @@ module Connection : sig
 end
 
 module Error : sig
-  type t
-
-  val name : t -> string
-  val message : t -> string
-  val code : t -> string
-  val errno : t -> int
-  val sql_state : t -> string option
-  val sql_message : t -> string option
+  val from_js : Js.Exn.t -> exn
 end
 
 type connection = Connection.t
 type callback =
-  [ `Error of Error.t
+  [ `Error of exn
   | `Mutation of int * int
   | `Select of rows * meta
   ] ->
@@ -58,7 +51,7 @@ val execute : Connection.t -> string -> params -> callback -> unit
 val parse_response :
   Js.Json.t ->
   Js.Json.t array ->
-  [> `Error of Error.t
+  [> `Error of exn
   |  `Mutation of int * int
   |  `Select of rows * meta
   ]

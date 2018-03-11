@@ -19,7 +19,7 @@ describe("Test parameter interpolation", () => {
       ));
       MySql2.execute(conn, sql, params, (res) =>
         switch (res) {
-        | `Error(e) => MySql2.Error.message(e) |> fail |> finish
+        | `Error(e) => raise(e)
         | `Mutation(_,_) => fail("unexpected_mutation_result") |> finish
         | `Select(rows, _) =>
             Belt_Array.map(rows, decoder)
@@ -42,7 +42,7 @@ describe("Test parameter interpolation", () => {
       ));
       MySql2.execute(conn, sql, params, (res) =>
         switch (res) {
-        | `Error(e) => MySql2.Error.message(e) |> fail |> finish
+        | `Error(e) => raise(e)
         | `Mutation(_,_) => fail("unexpected_mutation_result") |> finish
         | `Select(rows, _) =>
             Belt_Array.map(rows, decoder)

@@ -13,18 +13,18 @@ type thing = {
   code: string
 };
 
-let raiseError = (exn) => exn |> MySql2.Error.message |> Js.Exn.raiseError;
+let raiseError = (exn) => exn |> raise;
 
 let onSelect = (next, fn, res) =>
   switch res {
-  | `Error(e) => MySql2.Error.message(e) |> fail |> next
+  | `Error(e) => raise(e);
   | `Mutation(_) => fail("unexpected_mutation_result") |> next
   | `Select(rows, meta) => fn(rows, meta, next)
 };
 
 let onMutation = (next, fn, res) =>
   switch res {
-  | `Error(e) => MySql2.Error.message(e) |> fail |> next
+  | `Error(e) => raise(e);
   | `Mutation(count, id) => fn(count, id, next)
   | `Select(_, _) => fail("unexpected_select_result") |> next
   };

@@ -1,7 +1,7 @@
 open Jest;
 
-let connect = () =>
-  MySql2.Connection.make(~host="127.0.0.1", ~port=3306, ~user="root", ());
+/* This will cover the connection which uses only default options */
+let connect = () => MySql2.Connection.make(());
 
 describe("MySql2 Error Handling", () => {
   let conn = connect();
@@ -16,68 +16,38 @@ describe("MySql2 Error Handling", () => {
       | `Select(_,_) => fail("unexpected_select_result") |> finish
       | `Mutation(_,_) => fail("unexpected_mutation_result") |> finish
       | `Error(e) => {
-          MySql2.Error.code(e)
-          |> Expect.expect
-          |> Expect.toBe("ER_PARSE_ERROR")
+          Expect.expect(() => raise(e))
+          |> Expect.toThrowMessage("ER_PARSE_ERROR")
           |> finish
         }
       }
     })
   });
 
-  let errorTestGen = (name, testfn) =>
-    testAsync({j|Should return an error with a $name field|j}, finish => {
-      let sql = "SELECT invalid, AS result";
-      MySql2.execute(conn, sql, None, res => {
-        switch res {
-        | `Select(_,_) => fail("unexpected_select_result") |> finish
-        | `Mutation(_,_) => fail("unexpected_mutation_result") |> finish
-        | `Error(e) => testfn(finish, e)
-        }
-      })
-    });
-
-  errorTestGen("name", (finish, e) => {
-    MySql2.Error.name(e)
-    |> Expect.expect
-    |> Expect.toBe("Error")
-    |> finish
+  let emptyErrorTest = "Should parse out an empty error with defaults";
+  test(emptyErrorTest, () => {
+    try (
+      Js.Exn.raiseError("IDKWTM")
+    ) {
+    | Js.Exn.Error(e) => {
+        let exn = MySql2.Error.from_js(e);
+        Expect.expect(() => raise(exn))
+        |> Expect.toThrowMessage("99999 (99999) - IDKWTM")
+      }
+    }
   });
 
-  errorTestGen("message", (finish, e) => {
-    MySql2.Error.message(e)
-    |> Expect.expect
-    |> Expect.toMatch("SQL syntax")
-    |> finish
-  });
-
-  errorTestGen("code", (finish, e) => {
-    MySql2.Error.code(e)
-    |> Expect.expect
-    |> Expect.toBe("ER_PARSE_ERROR")
-    |> finish
-  });
-
-  errorTestGen("errno", (finish, e) => {
-    MySql2.Error.errno(e)
-    |> Expect.expect
-    |> Expect.toBe(1064)
-    |> finish
-  });
-
-  errorTestGen("sqlState", (finish, e) => {
-    MySql2.Error.sql_state(e)
-    |> Js.Option.getWithDefault("Unexpected NULL")
-    |> Expect.expect
-    |> Expect.toBe("42000")
-    |> finish
-  });
-
-  errorTestGen("sqlMessage", (finish, e) => {
-    MySql2.Error.sql_message(e)
-    |> Js.Option.getWithDefault("Unexpected NULL")
-    |> Expect.expect
-    |> Expect.toMatch("SQL syntax")
-    |> finish
+  let nonErrorObjectTest = "Should return a defaulted error";
+  test(nonErrorObjectTest, () => {
+    try (
+      /* Use raw JS here to throw a garbage exception object */
+      [%raw {|(function () { throw {} })()|}]
+    ) {
+    | Js.Exn.Error(e) => {
+        let exn = MySql2.Error.from_js(e);
+        Expect.expect(()=> raise(exn))
+        |> Expect.toThrowMessage("UNKNOWN - 99999 (99999) - EMPTY_MESSAGE")
+      }
+    }
   });
 });
