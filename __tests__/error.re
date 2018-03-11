@@ -1,12 +1,29 @@
 open Jest;
 
-/* This will cover the connection which uses only default options */
-let connect = () => MySql2.Connection.make(());
+let connect = () =>
+  MySql2.Connection.make(~host="127.0.0.1", ~port=3306, ~user="root", ());
 
 describe("MySql2 Error Handling", () => {
   let conn = connect();
 
   afterAll(() => MySql2.close(conn));
+
+  let accessDeniedTest = "Should respond with an access denied error";
+  testAsync(accessDeniedTest, finish => {
+    let c = MySql2.Connection.make(~password="s0m3 g@rb@g3 pw", ());
+    let sql = "SELECT 1+1 AS result";
+    MySql2.execute(c, sql, None, res => {
+      switch res {
+      | `Select(_,_) => fail("unexpected_select_result") |> finish
+      | `Mutation(_,_) => fail("unexpected_mutation_result") |> finish
+      | `Error(e) => {
+          Expect.expect(() => raise(e))
+          |> Expect.toThrowMessage("ER_ACCESS_DENIED_ERROR")
+          |> finish
+        }
+      }
+    })
+  });
 
   let syntaxErrorTest = "Should respond with an error on invalid SQL syntax.";
   testAsync(syntaxErrorTest, finish => {
