@@ -34,7 +34,7 @@ type callback =
   ] ->
   unit
 
-val close : Connection.t -> unit
+val close : connection -> unit
 
 val connect :
     ?host:string ->
@@ -44,7 +44,7 @@ val connect :
     ?database:string ->
     unit -> connection
 
-val execute : Connection.t -> string -> params -> callback -> unit
+val execute : connection -> string -> params -> callback -> unit
 
 val parse_response :
   Js.Json.t ->
