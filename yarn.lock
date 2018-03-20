@@ -16,9 +16,9 @@
   dependencies:
     jest "^22.0.4"
 
-"@glennsl/bs-json@^1.1.3":
-  version "1.1.3"
-  resolved "https://registry.yarnpkg.com/@glennsl/bs-json/-/bs-json-1.1.3.tgz#492e0336777087356968ae4d57515365d6a18b38"
+"@glennsl/bs-json@^1.2.0":
+  version "1.2.0"
+  resolved "https://registry.yarnpkg.com/@glennsl/bs-json/-/bs-json-1.2.0.tgz#8a2175458cf425614d20bb5542a2eb92b09bd4fc"
 
 abab@^1.0.4:
   version "1.0.4"
@@ -397,9 +397,9 @@ browser-resolve@^1.11.2:
   dependencies:
     resolve "1.1.7"
 
-bs-platform@^2.2.2:
-  version "2.2.2"
-  resolved "https://registry.yarnpkg.com/bs-platform/-/bs-platform-2.2.2.tgz#95ff37719771bbf310e8376fedd1148865c0da19"
+bs-platform@^2.2.3:
+  version "2.2.3"
+  resolved "https://registry.yarnpkg.com/bs-platform/-/bs-platform-2.2.3.tgz#d905ae10a5f3621e6a739041dfa0b58483a2174f"
 
 bser@^2.0.0:
   version "2.0.0"
@@ -662,10 +662,6 @@ detect-newline@^2.1.0:
 diff@^3.2.0:
   version "3.4.0"
   resolved "https://registry.yarnpkg.com/diff/-/diff-3.4.0.tgz#b1d85507daf3964828de54b37d0d73ba67dda56c"
-
-dom-walk@^0.1.0:
-  version "0.1.1"
-  resolved "https://registry.yarnpkg.com/dom-walk/-/dom-walk-0.1.1.tgz#672226dc74c8f799ad35307df936aba11acd6018"
 
 domexception@^1.0.0:
   version "1.0.1"
@@ -988,13 +984,6 @@ glob@^7.0.3, glob@^7.0.5, glob@^7.0.6, glob@^7.1.1, glob@^7.1.2:
     minimatch "^3.0.4"
     once "^1.3.0"
     path-is-absolute "^1.0.0"
-
-global@^4.3.2:
-  version "4.3.2"
-  resolved "https://registry.yarnpkg.com/global/-/global-4.3.2.tgz#e76989268a6c74c38908b1305b10fc0e394e9d0f"
-  dependencies:
-    min-document "^2.19.0"
-    process "~0.5.1"
 
 globals@^9.18.0:
   version "9.18.0"
@@ -1858,12 +1847,6 @@ mimic-fn@^1.0.0:
   version "1.1.0"
   resolved "https://registry.yarnpkg.com/mimic-fn/-/mimic-fn-1.1.0.tgz#e667783d92e89dbd342818b5230b9d62a672ad18"
 
-min-document@^2.19.0:
-  version "2.19.0"
-  resolved "https://registry.yarnpkg.com/min-document/-/min-document-2.19.0.tgz#7bd282e3f5842ed295bb748cdd9f1ffa2c824685"
-  dependencies:
-    dom-walk "^0.1.0"
-
 minimatch@^3.0.0, minimatch@^3.0.2, minimatch@^3.0.3, minimatch@^3.0.4:
   version "3.0.4"
   resolved "https://registry.yarnpkg.com/minimatch/-/minimatch-3.0.4.tgz#5166e286457f03306064be5497e8dbb0c3d32083"
@@ -2231,10 +2214,6 @@ private@^0.1.7:
 process-nextick-args@~1.0.6:
   version "1.0.7"
   resolved "https://registry.yarnpkg.com/process-nextick-args/-/process-nextick-args-1.0.7.tgz#150e20b756590ad3f91093f25a4f2ad8bff30ba3"
-
-process@~0.5.1:
-  version "0.5.2"
-  resolved "https://registry.yarnpkg.com/process/-/process-0.5.2.tgz#1638d8a8e34c2f440a91db95ab9aeb677fc185cf"
 
 pseudomap@^1.0.2:
   version "1.0.2"
