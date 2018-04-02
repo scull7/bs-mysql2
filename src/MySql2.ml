@@ -133,6 +133,13 @@ external execute :
   unit = "execute"
 [@@bs.send]
 
+external query :
+  Connection.t ->
+  Options.t ->
+  (Js.Exn.t Js.Nullable.t -> Js.Json.t -> Js.Json.t array -> unit) ->
+  unit = "query"
+[@@bs.send]
+
 let parse_response json meta =
   match Js.Json.classify json with
   | Js.Json.JSONObject _ -> result_mutation json
@@ -143,7 +150,11 @@ let parse_response json meta =
 
 let execute conn sql params callback =
   let options = Options.from_params sql params in
-  execute conn options (fun exn res meta ->
+  let fn = if options##namedPlaceholders == Js.true_
+    then execute
+    else query
+  in
+  fn conn options (fun exn res meta ->
     match (Js.Nullable.toOption exn) with
     | Some e -> callback (`Error (Error.from_js e))
     | None -> callback (parse_response res meta)
