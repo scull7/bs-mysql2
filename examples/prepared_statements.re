@@ -1,4 +1,4 @@
-
+/* 
 let conn =
   MySql2.connect(~host="127.0.0.1", ~port=3306, ~user="root", ());
 
@@ -28,4 +28,4 @@ MySql2.execute(conn, "SELECT :x + :y AS result", named, res =>
   }
 );
 
-MySql2.close(conn);
+MySql2.close(conn); */
