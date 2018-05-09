@@ -44,6 +44,8 @@
   "devDependencies": {
     "@glennsl/bs-jest": "^0.4.2",
     "coveralls": "^3.0.0",
+    "husky": "^0.14.3",
+    "lint-staged": "^7.1.0",
     "nyc": "^11.4.1"
   },
   "peerDependencies": {
