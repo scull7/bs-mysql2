@@ -12,9 +12,16 @@
     "coverage": "nyc report --temp-directory=coverage --reporter=text-lcov | coveralls",
     "format": "yarn bsrefmt --in-place",
     "install:peers": "yarn add $(jq -r '.peerDependencies|keys|join(\" \")' package.json)",
+    "precommit": "lint-staged",
     "start": "bsb -make-world -w",
     "test": "yarn run clean; yarn run build; jest --coverage && yarn run coverage",
     "watch:jest": "jest --coverage --watchAll"
+  },
+  "lint-staged": {
+    "*.{re,rei}": [
+      "refmt --in-place",
+      "git add"
+    ]
   },
   "keywords": [
     "BuckleScript",
@@ -31,12 +38,14 @@
   "author": "Nathan Sculli <scull7@gmail.com>",
   "license": "MIT",
   "dependencies": {
-    "mysql2": "^1.5.3"
+    "mysql2": "^1.5.3",
+    "@glennsl/bs-json": "^2.0.0"
   },
   "devDependencies": {
     "@glennsl/bs-jest": "^0.4.2",
-    "@glennsl/bs-json": "^2.0.0",
     "coveralls": "^3.0.1",
+    "husky": "^0.14.3",
+    "lint-staged": "^7.1.0",
     "nyc": "^11.8.0"
   },
   "peerDependencies": {
