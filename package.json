@@ -1,6 +1,6 @@
 {
   "name": "bs-mysql2",
-  "version": "3.1.0",
+  "version": "4.0.0",
   "description": "ReasonML bindings to the mysql2 library.",
   "scripts": {
     "examples:simple": "node examples/simple.bs.js",
@@ -38,8 +38,8 @@
   "author": "Nathan Sculli <scull7@gmail.com>",
   "license": "MIT",
   "dependencies": {
-    "mysql2": "^1.5.3",
-    "@glennsl/bs-json": "^2.0.0"
+    "@glennsl/bs-json": "^2.0.0",
+    "mysql2": "^1.5.3"
   },
   "devDependencies": {
     "@glennsl/bs-jest": "^0.4.2",
