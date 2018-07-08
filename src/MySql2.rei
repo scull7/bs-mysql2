@@ -1,35 +1,96 @@
-type params = option([ | `Named(Js.Json.t) | `Positional(Js.Json.t)]);
-type rows = array(Js.Json.t);
-type metaRecord;
-type meta = array(metaRecord);
-type connection;
+module Connection: {
+  type t;
 
+  let connect:
+    (
+      ~host: string=?,
+      ~port: int=?,
+      ~user: string=?,
+      ~password: string=?,
+      ~database: string=?,
+      unit
+    ) =>
+    t;
 
-module Error: {
-  let fromJs: Js.Json.t => exn;
+  let close: t => unit;
+};
+
+module Exn: {let fromJs: Js.Json.t => exn;};
+
+module Id: {
+  type t = MySql2_id.t;
+
+  let fromJson: Js.Json.t => t;
+
+  let toJson: t => Js.Json.t;
+
+  let toString: t => string;
+};
+
+module Mutation: {
+  type t;
+
+  let insertId: t => option(MySql2_id.t);
+
+  let fieldCount: t => int;
+
+  let affectedRows: t => int;
+
+  let info: t => string;
+
+  let serverStatus: t => int;
+
+  let warningStatus: t => int;
+};
+
+module Params: {
+  type t;
+
+  let named: Js.Json.t => t;
+
+  let positional: Js.Json.t => t;
+};
+
+module Select: {
+  type t;
+
+  module Meta: {
+    type t;
+
+    let catalog: t => string;
+
+    let schema: t => string;
+
+    let name: t => string;
+
+    let orgName: t => string;
+
+    let table: t => string;
+
+    let characterSet: t => int;
+
+    let columnLength: t => int;
+
+    let columnType: t => int;
+
+    let flags: t => int;
+
+    let decimals: t => int;
+  };
+
+  let count: t => int;
+
+  let flatMap: (t, (Js.Json.t, array(Meta.t)) => 'a) => array('a);
+
+  let mapDecoder: (t, Js.Json.t => 'a) => array('a);
 };
 
 type response = [
   | `Error(exn)
-  | `Mutation(int, int)
-  | `Select(rows, meta)
+  | `Mutation(Mutation.t)
+  | `Select(Select.t)
 ];
 
 type callback = response => unit;
 
-let close: connection => unit;
-
-let connect:
-  (
-    ~host: string=?,
-    ~port: int=?,
-    ~user: string=?,
-    ~password: string=?,
-    ~database: string=?,
-    unit
-  ) =>
-  connection;
-
-let execute: (connection, string, params, callback) => unit;
-
-let parseResponse: (Js.Json.t, array(Js.Json.t)) => response;
+let execute: (Connection.t, string, option(Params.t), callback) => unit;

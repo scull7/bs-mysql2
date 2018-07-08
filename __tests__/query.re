@@ -1,7 +1,10 @@
 open Jest;
 
+[@bs.val] [@bs.scope "Number"]
+external max_safe_integer : int = "MAX_SAFE_INTEGER";
+
 let connect = () =>
-  MySql2.connect(~host="127.0.0.1", ~port=3306, ~user="root", ());
+  MySql2.Connection.connect(~host="127.0.0.1", ~port=3306, ~user="root", ());
 
 type insert = {
   affected_rows: int,
@@ -19,27 +22,27 @@ let onSelect = (next, fn, res) =>
   switch (res) {
   | `Error(e) => raise(e)
   | `Mutation(_) => fail("unexpected_mutation_result") |> next
-  | `Select(rows, meta) => fn(rows, meta, next)
+  | `Select(select) => fn(select, next)
   };
 
 let onMutation = (next, fn, res) =>
   switch (res) {
   | `Error(e) => raise(e)
-  | `Mutation(count, id) => fn(count, id, next)
-  | `Select(_, _) => fail("unexpected_select_result") |> next
+  | `Mutation(mutation) => fn(mutation, next)
+  | `Select(_) => fail("unexpected_select_result") |> next
   };
 
 describe("Raw SQL Query Test", () => {
   let conn = connect();
-  afterAll(() => MySql2.close(conn));
+  afterAll(() => MySql2.Connection.close(conn));
   testAsync("Expect a test database to be listed", finish =>
     MySql2.execute(
       conn,
       "SHOW DATABASES",
       None,
-      onSelect(finish, (rows, _, next) =>
-        rows
-        |> Js.Array.map(Json.Decode.dict(Json.Decode.string))
+      onSelect(finish, (select, next) =>
+        select
+        |. MySql2.Select.mapDecoder(Json.Decode.dict(Json.Decode.string))
         |> Js.Array.map(x => Js.Dict.unsafeGet(x, "Database"))
         |> Expect.expect
         |> Expect.toContain("test")
@@ -62,35 +65,36 @@ describe("Raw SQL Query Test Sequence", () => {
     MySql2.execute(conn, "DROP TABLE IF EXISTS `test`.`simple`", None, res =>
       switch (res) {
       | `Error(e) => raiseError(e)
-      | `Mutation(_, _) => next()
-      | `Select(_, _) => failwith("unexpected_select_result")
+      | `Mutation(_) => next()
+      | `Select(_) => failwith("unexpected_select_result")
       }
     );
   let create = next =>
     MySql2.execute(conn, table_sql, None, res =>
       switch (res) {
       | `Error(e) => raiseError(e)
-      | `Mutation(_, _) => next()
-      | `Select(_, _) => failwith("unexpected_select_result")
+      | `Mutation(_) => next()
+      | `Select(_) => failwith("unexpected_select_result")
       }
     );
   beforeAllAsync(finish => drop(() => create(finish)));
-  afterAll(() => MySql2.close(conn));
+  afterAll(() => MySql2.Connection.close(conn));
   testAsync("Expect a mutation result for an INSERT query", finish => {
     let sql = "INSERT INTO `test`.`simple` (`code`) VALUES ('foo')";
     MySql2.execute(
       conn,
       sql,
       None,
-      onMutation(
-        finish,
-        (count, id, next) => {
-          let countIsOne = count == 1;
-          let idIsOne = id == 1;
-          Expect.expect([|countIsOne, idIsOne|])
-          |> Expect.toBeSupersetOf([|true, true|])
-          |> next;
-        },
+      onMutation(finish, (mutation, next) =>
+        (
+          MySql2.Mutation.insertId(mutation)
+          |. Belt.Option.getExn
+          |. MySql2.Id.toString,
+          MySql2.Mutation.affectedRows(mutation),
+        )
+        |> Expect.expect
+        |> Expect.toEqual(("1", 1))
+        |> next
       ),
     );
   });
@@ -100,15 +104,14 @@ describe("Raw SQL Query Test Sequence", () => {
       conn,
       sql,
       None,
-      onMutation(
-        finish,
-        (count, id, next) => {
-          let countIsOne = count == 1;
-          let idIsZero = id == 0;
-          Expect.expect([|countIsOne, idIsZero|])
-          |> Expect.toBeSupersetOf([|true, true|])
-          |> next;
-        },
+      onMutation(finish, (mutation, next) =>
+        (
+          MySql2.Mutation.insertId(mutation),
+          MySql2.Mutation.affectedRows(mutation),
+        )
+        |> Expect.expect
+        |> Expect.toEqual((None, 1))
+        |> next
       ),
     );
   });
@@ -119,8 +122,9 @@ describe("Raw SQL Query Test Sequence", () => {
       conn,
       sql,
       None,
-      onSelect(finish, (rows, _, next) =>
-        Belt_Array.map(rows, decoder)
+      onSelect(finish, (select, next) =>
+        select
+        |. MySql2.Select.mapDecoder(decoder)
         |> Expect.expect
         |> Expect.toHaveLength(0)
         |> next
@@ -143,11 +147,55 @@ describe("Raw SQL Query Test Sequence", () => {
       conn,
       sql,
       None,
-      onSelect(finish, (rows, _, next) =>
-        Belt_Array.map(rows, decoder)
+      onSelect(finish, (select, next) =>
+        select
+        |. MySql2.Select.mapDecoder(decoder)
         |> first_row
         |> Expect.expect
         |> Expect.toBeSupersetOf([|true, true|])
+        |> next
+      ),
+    );
+  });
+  testAsync("Expect a JS representable BIGINT be a string", finish => {
+    let sql = {j|
+      INSERT INTO `test`.`simple` (`id`,`code`)
+      VALUES
+      (9007199254740991, '2^53-1')
+    |j};
+
+    MySql2.execute(
+      conn,
+      sql,
+      None,
+      onMutation(finish, (mutation, next) =>
+        MySql2.Mutation.insertId(mutation)
+        |. Belt.Option.getExn
+        |. MySql2.Id.toString
+        |> Expect.expect
+        |> Expect.toBe(max_safe_integer |. string_of_int)
+        |> next
+      ),
+    );
+  });
+  testAsync("Expect a non-JS representable BIGINT be a string", finish => {
+    let sql = {j|
+      INSERT INTO `test`.`simple` (`id`,`code`)
+      VALUES
+      (9007199254740993, '2^53-1')
+    |j};
+
+    MySql2.execute(
+      conn,
+      sql,
+      None,
+      onMutation(finish, (mutation, next) =>
+        mutation
+        |. MySql2.Mutation.insertId
+        |. Belt.Option.getExn
+        |. MySql2.Id.toString
+        |> Expect.expect
+        |> Expect.toBe("9007199254740993")
         |> next
       ),
     );
