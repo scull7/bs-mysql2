@@ -11,7 +11,6 @@
     "clean": "bsb -clean-world",
     "coverage": "nyc report --temp-directory=coverage --reporter=text-lcov | coveralls",
     "format": "yarn bsrefmt --in-place",
-    "install:peers": "yarn add $(jq -r '.peerDependencies|keys|join(\" \")' package.json)",
     "precommit": "lint-staged",
     "start": "bsb -make-world -w",
     "test": "yarn run clean; yarn run build; jest --coverage && yarn run coverage",
