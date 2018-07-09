@@ -1,10 +1,11 @@
-let conn = MySql2.connect(~host="127.0.0.1", ~port=3306, ~user="root", ());
+let conn =
+  MySql2.Connection.connect(~host="127.0.0.1", ~port=3306, ~user="root", ());
 
 let test_handler =
   fun
   | `Error(e) => Js.log2("ERROR: ", e)
-  | `Select(rows, meta) => Js.log3("SELECT: ", rows, meta)
-  | `Mutation(count, id) => Js.log3("MUTATION: ", count, id);
+  | `Select(select) => Js.log2("SELECT: ", select)
+  | `Mutation(mutation) => Js.log2("MUTATION: ", mutation);
 
 let _ = MySql2.execute(conn, "SHOW DATABASES", None, test_handler);
 
@@ -36,4 +37,4 @@ let _ =
 
 let _ = MySql2.execute(conn, "SELECT * FROM test.simple", None, test_handler);
 
-let _ = MySql2.close(conn);
+let _ = MySql2.Connection.close(conn);
