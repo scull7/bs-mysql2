@@ -2,10 +2,15 @@
 language: node_js
 node_js:
   - 6
+  - 8
+  - 10
 cache: yarn
 services:
   - mysql
 before_install:
-  - sudo apt-get -qq update
-  - sudo apt-get install -y jq
   - mysql -e 'CREATE DATABASE IF NOT EXISTS test;'
+before_script:
+  - yarn clean
+  - yarn build
+after_success:
+  - yarn coverage

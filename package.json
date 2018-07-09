@@ -13,12 +13,12 @@
     "format": "yarn bsrefmt --in-place",
     "precommit": "lint-staged",
     "start": "bsb -make-world -w",
-    "test": "yarn run clean; yarn run build; jest --coverage && yarn run coverage",
+    "test": "jest --coverage",
     "watch:jest": "jest --coverage --watchAll"
   },
   "lint-staged": {
     "*.{re,rei}": [
-      "refmt --in-place",
+      "yarn format",
       "git add"
     ]
   },
