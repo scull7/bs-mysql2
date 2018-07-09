@@ -1,6 +1,6 @@
 {
   "name": "bs-mysql2",
-  "version": "4.0.0",
+  "version": "5.0.0",
   "description": "ReasonML bindings to the mysql2 library.",
   "scripts": {
     "examples:simple": "node examples/simple.bs.js",
