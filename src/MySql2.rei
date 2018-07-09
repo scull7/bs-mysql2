@@ -67,6 +67,8 @@ module Select: {
 
     let table: t => string;
 
+    let orgTable: t => string;
+
     let characterSet: t => int;
 
     let columnLength: t => int;
@@ -77,6 +79,8 @@ module Select: {
 
     let decimals: t => int;
   };
+
+  let meta: t => array(Meta.t);
 
   let count: t => int;
 

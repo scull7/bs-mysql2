@@ -1,4 +1,11 @@
 module Select = {
+  /* https://mariadb.com/kb/en/library/packet_resultset/ */
+  /**
+  * There will be a meta data packet for each column within the
+  * response.
+  * @TODO - determine the meaning of the characterSet field
+  * @TODO - determine the meaning of the flags field.
+  */
   module Meta = {
     [@bs.deriving abstract]
     type t = {
@@ -33,23 +40,29 @@ module Select = {
       );
   };
 
+  [@bs.deriving abstract]
   type t = {
     rows: array(Js.Json.t),
     meta: array(Meta.t),
   };
 
-  let make = (rows, meta) => {
-    rows,
-    meta: meta |. Belt.Array.map(Meta.make),
-  };
+  let make = (rows, meta) =>
+    t(~rows, ~meta=meta |. Belt.Array.map(Meta.make));
 
-  let flatMap = (t, fn) => Belt.Array.map(t.rows, row => fn(row, t.meta));
+  let flatMap = (t, fn) =>
+    Belt.Array.map(t |. rows, row => fn(row, t |. meta));
 
-  let mapDecoder = (t, decoder) => Belt.Array.map(t.rows, decoder);
+  let mapDecoder = (t, decoder) => Belt.Array.map(t |. rows, decoder);
 
-  let count = t => Belt.Array.length(t.rows);
+  let count = t => Belt.Array.length(t |. rows);
 };
 
+/* https://github.com/mysqljs/mysql#getting-the-number-of-changed-rows */
+/*
+ * @TODO - Add changed rows
+ * @TODO - determine the meaning of fieldCount
+ * @TODO - determine the meaning of info
+ */
 module Mutation = {
   [@bs.deriving abstract]
   type t = {
