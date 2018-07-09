@@ -54,13 +54,13 @@ and [Named Placeholders](#named-placeholders).
 #### Standard Query Method
 ```reason
 let conn
-  = MySql2.connect(~host=127.0.0.1, ~port=3306, ~user="root", ());
+  = MySql2.Connection.connect(~host=127.0.0.1, ~port=3306, ~user="root", ());
 
 MySql2.execute(conn, "SHOW DATABASES", None, res => {
     switch res {
     | `Error(e) => Js.log2("ERROR: ", e)
-    | `Select(rows, meta) => Js.log3("SELECT: ", rows, meta)
-    | `Mutation(count, id) => Js.log3("MUTATION: ", count, id)
+    | `Select(select) => Js.log2("SELECT: ", select)
+    | `Mutation(mutation) => Js.log2("MUTATION: ", mutation)
     }
   MySql2.close(conn);
 });
@@ -72,9 +72,9 @@ MySql2.execute(conn, "SHOW DATABASES", None, res => {
 ##### Named Placeholders
 ```reason
 let conn
-  = MySql2.connect(~host=127.0.0.1, ~port=3306, ~user="root", ());
+  = MySql2.Connect.connect(~host=127.0.0.1, ~port=3306, ~user="root", ());
 
-let named = `Named(
+let named = MySql2.Params.named(
   Json.Encode.object_([
     ("x", Json.Encode.int(1)),
     ("y", Json.Encode.int(2)),
@@ -84,8 +84,8 @@ let named = `Named(
 MySql2.execute(conn, "SELECT :x + :y AS result", Some(named), res => {
     switch res {
     | `Error(e) => Js.log2("ERROR: ", e)
-    | `Select(rows, meta) => Js.log3("SELECT: ", rows, meta)
-    | `Mutation(count, id) => Js.log3("MUTATION: ", count, id)
+    | `Select(select) => Js.log2("SELECT: ", select)
+    | `Mutation(mutation) => Js.log2("MUTATION: ", mutation)
     }
   }
   MySql2.close(conn);
@@ -95,17 +95,17 @@ MySql2.execute(conn, "SELECT :x + :y AS result", Some(named), res => {
 ##### Unnamed Placeholders
 ```reason
 let conn
-  = MySql2.connect(~host=127.0.0.1, ~port=3306, ~user="root", ());
+  = MySql2.Connection.connect(~host=127.0.0.1, ~port=3306, ~user="root", ());
 
-let positional = `Positional(
+let positional = MySql2.Params.positional(
   Belt_Array.map([|5, 6|], Json.Encode.int) |> Json.Encode.jsonArray
 );
 
 MySql2.execute(conn, "SELECT 1 + ? + ? AS result", Some(positional), res => {
     switch res {
     | `Error(e) => Js.log2("ERROR: ", e)
-    | `Select(rows, meta) => Js.log3("SELECT: ", rows, meta)
-    | `Mutation(count, id) => Js.log3("MUTATION: ", count, id)
+    | `Select(rows, meta) => Js.log2("SELECT: ", rows, meta)
+    | `Mutation(count, id) => Js.log2("MUTATION: ", count, id)
     }
   }
   MySql2.close(conn);

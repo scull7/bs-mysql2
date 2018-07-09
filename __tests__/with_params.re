@@ -1,7 +1,7 @@
 open Jest;
 
 let connect = () =>
-  MySql2.connect(
+  MySql2.Connection.connect(
     ~host="127.0.0.1",
     ~port=3306,
     ~user="root",
@@ -15,13 +15,13 @@ type result = {result: int};
 describe("Test parameter interpolation", () => {
   let conn = connect();
   let decoder = json => Json.Decode.{result: json |> field("result", int)};
-  afterAll(() => MySql2.close(conn));
+  afterAll(() => MySql2.Connection.close(conn));
   describe("Standard (positional) parameters", () =>
     testAsync("Expect parameters to be substituted properly", finish => {
       let sql = "SELECT 1 + ? + ? AS result";
       let params =
         Some(
-          `Positional(
+          MySql2.Params.positional(
             Belt_Array.map([|5, 6|], Json.Encode.int)
             |> Json.Encode.jsonArray,
           ),
@@ -29,9 +29,10 @@ describe("Test parameter interpolation", () => {
       MySql2.execute(conn, sql, params, res =>
         switch (res) {
         | `Error(e) => raise(e)
-        | `Mutation(_, _) => fail("unexpected_mutation_result") |> finish
-        | `Select(rows, _) =>
-          Belt_Array.map(rows, decoder)
+        | `Mutation(_) => fail("unexpected_mutation_result") |> finish
+        | `Select(select) =>
+          select
+          |. MySql2.Select.flatMap((row, _) => row |. decoder)
           |> Belt_Array.map(_, x => x.result)
           |> Expect.expect
           |> Expect.toBeSupersetOf([|12|])
@@ -45,7 +46,7 @@ describe("Test parameter interpolation", () => {
       let sql = "SELECT :x + :y AS result";
       let params =
         Some(
-          `Named(
+          MySql2.Params.named(
             Json.Encode.object_([
               ("x", Json.Encode.int(1)),
               ("y", Json.Encode.int(2)),
@@ -55,9 +56,10 @@ describe("Test parameter interpolation", () => {
       MySql2.execute(conn, sql, params, res =>
         switch (res) {
         | `Error(e) => raise(e)
-        | `Mutation(_, _) => fail("unexpected_mutation_result") |> finish
-        | `Select(rows, _) =>
-          Belt_Array.map(rows, decoder)
+        | `Mutation(_) => fail("unexpected_mutation_result") |> finish
+        | `Select(select) =>
+          select
+          |. MySql2.Select.mapDecoder(decoder)
           |> Belt_Array.map(_, x => x.result)
           |> Expect.expect
           |> Expect.toBeSupersetOf([|3|])
