@@ -50,11 +50,11 @@ module Select = {
     t(~rows, ~meta=meta |. Belt.Array.map(Meta.make));
 
   let flatMap = (t, fn) =>
-    Belt.Array.map(t |. rows, row => fn(row, t |. meta));
+    Belt.Array.map(t |. rowsGet, row => fn(row, t |. metaGet));
 
-  let mapDecoder = (t, decoder) => Belt.Array.map(t |. rows, decoder);
+  let mapDecoder = (t, decoder) => Belt.Array.map(t |. rowsGet, decoder);
 
-  let count = t => Belt.Array.length(t |. rows);
+  let count = t => Belt.Array.length(t |. rowsGet);
 };
 
 /* https://github.com/mysqljs/mysql#getting-the-number-of-changed-rows */

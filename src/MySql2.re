@@ -54,7 +54,7 @@ let handler = (callback, exn, res, meta) =>
 let execute = (conn, sql, params, callback) => {
   let options = Options.fromParams(sql, params);
 
-  options |. Options.namedPlaceholders ?
+  options |. Options.namedPlaceholdersGet ?
     execute(conn, options, handler(callback)) :
     query(conn, options, handler(callback));
 };
