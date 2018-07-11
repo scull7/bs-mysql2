@@ -54,7 +54,15 @@ module Select = {
 
   let mapDecoder = (t, decoder) => Belt.Array.map(t |. rowsGet, decoder);
 
+  let concat = (t1, t2) =>
+    t(
+      ~rows=Belt.Array.concat(t1 |. rowsGet, t2 |. rowsGet),
+      ~meta=t1 |. metaGet,
+    );
+
   let count = t => Belt.Array.length(t |. rowsGet);
+
+  let rows = t => t |. rowsGet;
 };
 
 /* https://github.com/mysqljs/mysql#getting-the-number-of-changed-rows */
