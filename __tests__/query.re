@@ -42,7 +42,7 @@ describe("Raw SQL Query Test", () => {
       None,
       onSelect(finish, (select, next) =>
         select
-        |. MySql2.Select.mapDecoder(Json.Decode.dict(Json.Decode.string))
+        |. MySql2.Select.flatMap(Json.Decode.dict(Json.Decode.string))
         |> Js.Array.map(x => Js.Dict.unsafeGet(x, "Database"))
         |> Expect.expect
         |> Expect.toContain("test")
@@ -124,7 +124,7 @@ describe("Raw SQL Query Test Sequence", () => {
       None,
       onSelect(finish, (select, next) =>
         select
-        |. MySql2.Select.mapDecoder(decoder)
+        |. MySql2.Select.flatMap(decoder)
         |> Expect.expect
         |> Expect.toHaveLength(0)
         |> next
@@ -149,7 +149,7 @@ describe("Raw SQL Query Test Sequence", () => {
       None,
       onSelect(finish, (select, next) =>
         select
-        |. MySql2.Select.mapDecoder(decoder)
+        |. MySql2.Select.flatMap(decoder)
         |> first_row
         |> Expect.expect
         |> Expect.toBeSupersetOf([|true, true|])

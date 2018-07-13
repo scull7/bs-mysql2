@@ -32,7 +32,7 @@ describe("Test parameter interpolation", () => {
         | `Mutation(_) => fail("unexpected_mutation_result") |> finish
         | `Select(select) =>
           select
-          |. MySql2.Select.flatMap((row, _) => row |. decoder)
+          |. MySql2.Select.flatMapWithMeta((row, _) => row |. decoder)
           |> Belt_Array.map(_, x => x.result)
           |> Expect.expect
           |> Expect.toBeSupersetOf([|12|])
@@ -59,7 +59,7 @@ describe("Test parameter interpolation", () => {
         | `Mutation(_) => fail("unexpected_mutation_result") |> finish
         | `Select(select) =>
           select
-          |. MySql2.Select.mapDecoder(decoder)
+          |. MySql2.Select.flatMap(decoder)
           |> Belt_Array.map(_, x => x.result)
           |> Expect.expect
           |> Expect.toBeSupersetOf([|3|])

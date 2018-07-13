@@ -28,7 +28,7 @@ describe("MySql2_response", () =>
         let t2 = MySql2_response.Select.make(rows2, [|test_meta|]);
 
         MySql2_response.Select.concat(t1, t2)
-        |. MySql2_response.Select.mapDecoder(x =>
+        |. MySql2_response.Select.flatMap(x =>
              x |. Js.Json.decodeString |. Belt.Option.getExn
            )
         |. Expect.expect

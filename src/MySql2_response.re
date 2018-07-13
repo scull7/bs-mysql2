@@ -49,10 +49,10 @@ module Select = {
   let make = (rows, meta) =>
     t(~rows, ~meta=meta |. Belt.Array.map(Meta.make));
 
-  let flatMap = (t, fn) =>
+  let flatMapWithMeta = (t, fn) =>
     Belt.Array.map(t |. rowsGet, row => fn(row, t |. metaGet));
 
-  let mapDecoder = (t, decoder) => Belt.Array.map(t |. rowsGet, decoder);
+  let flatMap = (t, decoder) => Belt.Array.map(t |. rowsGet, decoder);
 
   let concat = (t1, t2) =>
     t(

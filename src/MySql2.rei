@@ -86,9 +86,9 @@ module Select: {
 
   let count: t => int;
 
-  let flatMap: (t, (Js.Json.t, array(Meta.t)) => 'a) => array('a);
+  let flatMapWithMeta: (t, (Js.Json.t, array(Meta.t)) => 'a) => array('a);
 
-  let mapDecoder: (t, Js.Json.t => 'a) => array('a);
+  let flatMap: (t, Js.Json.t => 'a) => array('a);
 
   let rows: t => array(Js.Json.t);
 };
