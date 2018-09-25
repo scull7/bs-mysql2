@@ -12,6 +12,8 @@ module Connection: {
     ) =>
     t;
 
+  let isValid: t => bool;
+
   let close: t => unit;
 };
 
