@@ -15,7 +15,15 @@ module Connection: {
   let close: t => unit;
 };
 
-module Exn: {let fromJs: Js.Json.t => exn;};
+module Exn: {
+  type t;
+
+  let fromJs: Js.Json.t => t;
+
+  let toExn: t => exn;
+
+  let fromJsToExn: Js.Json.t => exn;
+};
 
 module Id: {
   type t = MySql2_id.t;
@@ -94,7 +102,7 @@ module Select: {
 };
 
 type response = [
-  | `Error(exn)
+  | `Error(Exn.t)
   | `Mutation(Mutation.t)
   | `Select(Select.t)
 ];

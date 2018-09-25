@@ -35,7 +35,7 @@ let mutationPromise = (db, sql, params) =>
       sql,
       params,
       fun
-      | `Error(e) => reject(. e)
+      | `Error(e) => reject(. e |> MySql2.Exn.toExn)
       | `Select(_) => reject(. "unexpected_select_result" |. Failure)
       | `Mutation(m) => resolve(. m),
     )
@@ -49,7 +49,7 @@ let selectPromise = (db, sql, params) =>
       sql,
       params,
       fun
-      | `Error(e) => reject(. e)
+      | `Error(e) => reject(. e |> MySql2.Exn.toExn)
       | `Mutation(_) => reject(. "unexpected_mutation_result" |. Failure)
       | `Select(select) => resolve(. select),
     )

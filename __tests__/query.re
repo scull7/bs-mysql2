@@ -20,14 +20,14 @@ let raiseError = exn => exn |> raise;
 
 let onSelect = (next, fn, res) =>
   switch (res) {
-  | `Error(e) => raise(e)
+  | `Error(e) => raise(e |> MySql2.Exn.toExn)
   | `Mutation(_) => fail("unexpected_mutation_result") |> next
   | `Select(select) => fn(select, next)
   };
 
 let onMutation = (next, fn, res) =>
   switch (res) {
-  | `Error(e) => raise(e)
+  | `Error(e) => raise(e |> MySql2.Exn.toExn)
   | `Mutation(mutation) => fn(mutation, next)
   | `Select(_) => fail("unexpected_select_result") |> next
   };
@@ -64,7 +64,7 @@ describe("Raw SQL Query Test Sequence", () => {
   let drop = next =>
     MySql2.execute(conn, "DROP TABLE IF EXISTS `test`.`simple`", None, res =>
       switch (res) {
-      | `Error(e) => raiseError(e)
+      | `Error(e) => raiseError(e |> MySql2.Exn.toExn)
       | `Mutation(_) => next()
       | `Select(_) => failwith("unexpected_select_result")
       }
@@ -72,7 +72,7 @@ describe("Raw SQL Query Test Sequence", () => {
   let create = next =>
     MySql2.execute(conn, table_sql, None, res =>
       switch (res) {
-      | `Error(e) => raiseError(e)
+      | `Error(e) => raiseError(e |> MySql2.Exn.toExn)
       | `Mutation(_) => next()
       | `Select(_) => failwith("unexpected_select_result")
       }

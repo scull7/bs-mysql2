@@ -9,7 +9,7 @@ describe("MySql2.parseResponse", () => {
       switch (Response.fromDriverResponse(invalid, [||])) {
       | `Select(_) => Failure("unexpected_select_result")
       | `Mutation(_) => Failure("unexpected_mutation_result")
-      | `Error(e) => e
+      | `Error(e) => MySql2_error.toExn(e)
       };
     Expect.expect(() =>
       raise(message)
@@ -22,7 +22,7 @@ describe("MySql2.parseResponse", () => {
       switch (Response.fromDriverResponse(invalid, [||])) {
       | `Select(_) => Failure("invalid_select_result")
       | `Mutation(_) => Failure("invalid_mutation_result")
-      | `Error(e) => e
+      | `Error(e) => MySql2_error.toExn(e)
       };
     Expect.expect(() =>
       raise(message)

@@ -1,3 +1,5 @@
+module Exn = MySql2_error;
+
 module Select = {
   /* https://mariadb.com/kb/en/library/packet_resultset/ */
   /**
@@ -102,7 +104,7 @@ module Mutation = {
     );
 };
 
-type t = [ | `Select(Select.t) | `Mutation(Mutation.t) | `Error(exn)];
+type t = [ | `Select(Select.t) | `Mutation(Mutation.t) | `Error(Exn.t)];
 
 let fromDriverResponse = (response, meta) =>
   switch (response |. Js.Json.classify) {

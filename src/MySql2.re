@@ -15,7 +15,7 @@ module Response = MySql2_response;
 module Options = MySql2_options;
 
 type response = [
-  | `Error(exn)
+  | `Error(Exn.t)
   | `Mutation(Mutation.t)
   | `Select(Select.t)
 ];
