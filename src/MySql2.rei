@@ -17,6 +17,47 @@ module Connection: {
   let close: t => unit;
 };
 
+module Pool: {
+  type t;
+
+  let make:
+    (
+      ~connectionLimit: int=?,
+      ~queueLimit: int=?,
+      ~waitForConnections: bool=?,
+      ~host: string=?,
+      ~port: int=?,
+      ~user: string=?,
+      ~password: string=?,
+      ~database: string=?,
+      unit
+    ) =>
+    t;
+
+  let on:
+    (
+      t,
+      [
+        | `acquire(Connection.t => unit)
+        | `enqueue(unit => unit)
+        | `release(Connection.t => unit)
+      ]
+    ) =>
+    t;
+
+  let drain: (t, Js.Null_undefined.t(Js.Exn.t) => unit) => unit;
+
+  let getConnection:
+    (
+      t,
+      (Js.Null_undefined.t(Js.Exn.t), Js.Null_undefined.t(Connection.t)) =>
+      unit
+    ) =>
+    unit;
+
+  let release: Connection.t => unit;
+};
+
 module Exn: {
   type t;
 

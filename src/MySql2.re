@@ -1,5 +1,7 @@
 module Connection = MySql2_connection;
 
+module Pool = MySql2_pool;
+
 module Exn = MySql2_error;
 
 module Id = MySql2_id;
