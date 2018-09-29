@@ -72,7 +72,7 @@ module Options = {
   };
 };
 
-[@bs.module "mysql"] external createPool : Options.t => pool = "";
+[@bs.module "mysql2"] external createPool : Options.t => pool = "";
 
 [@bs.send]
 external drain : (pool, Js.Null_undefined.t(Js.Exn.t) => unit) => unit =
