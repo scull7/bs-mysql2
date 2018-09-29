@@ -1,6 +1,6 @@
 {
   "name": "bs-mysql2",
-  "version": "8.2.0",
+  "version": "8.2.1",
   "package-specs": {
     "module": "commonjs",
     "in-source": true
