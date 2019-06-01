@@ -54,24 +54,39 @@ describe("MySql2.Pool", () => {
     );
   };
 
+  let getFirstRow = result =>
+    switch (result->MySql2.Select.rows->Belt.Array.get(0)) {
+    | Some(row) => Belt.Result.Ok(row)
+    | None => Belt.Result.Error("No rows in result set")
+    };
+
+  let decodeRow = row =>
+    switch (row->Js.Json.classify) {
+    | Js.Json.JSONObject(dict) =>
+      switch (dict->Js.Dict.get("result")) {
+      | Some(result) =>
+        switch (result->Js.Json.decodeNumber) {
+        | Some(number) => Belt.Result.Ok(number)
+        | None => Belt.Result.Error({j|Result wasn't a number: $result|j})
+        }
+      | None =>
+        Belt.Result.Error({j|Could not find result key in row: $dict|j})
+      }
+    | _ => Belt.Result.Error({j|Could not decode row object: $row|j})
+    };
+
   describe("connect :: with params :: ", () =>
     testAsync("should connect and allow a query", finish =>
       getDb(connect, db =>
         select(db, "SELECT 1 + 1 AS result", None, response =>
-          switch (response) {
-          | Belt.Result.Error(msg) => msg->fail->finish
-          | Belt.Result.Ok(result) =>
-            result
-            ->MySql2.Select.rows
-            ->Belt.Array.get(0)
-            ->Belt.Option.flatMap(Js.Json.decodeObject)
-            ->Belt.Option.flatMap(dict => Js.Dict.get(dict, "result"))
-            ->Belt.Option.flatMap(Js.Json.decodeNumber)
-            ->Belt.Option.map(float =>
-                float |> Expect.expect |> Expect.toEqual(2.0)
-              )
-            ->Belt.Option.getExn
-            ->finish
+          switch (
+            response
+            ->Belt.Result.flatMap(getFirstRow)
+            ->Belt.Result.flatMap(decodeRow)
+            ->Belt.Result.map(x => x |> Expect.expect |> Expect.toEqual(2.0))
+          ) {
+          | Belt.Result.Ok(assertion) => assertion->finish
+          | Belt.Result.Error(message) => message->fail->finish
           }
         )
       )
@@ -82,20 +97,14 @@ describe("MySql2.Pool", () => {
     testAsync("should connect and allow a query", finish =>
       getDb(connectWithDefaults, db =>
         select(db, "SELECT 1 + 1 AS result", None, response =>
-          switch (response) {
-          | Belt.Result.Error(msg) => msg->fail->finish
-          | Belt.Result.Ok(result) =>
-            result
-            ->MySql2.Select.rows
-            ->Belt.Array.get(0)
-            ->Belt.Option.flatMap(Js.Json.decodeObject)
-            ->Belt.Option.flatMap(dict => Js.Dict.get(dict, "result"))
-            ->Belt.Option.flatMap(Js.Json.decodeNumber)
-            ->Belt.Option.map(float =>
-                float |> Expect.expect |> Expect.toEqual(2.0)
-              )
-            ->Belt.Option.getExn
-            ->finish
+          switch (
+            response
+            ->Belt.Result.flatMap(getFirstRow)
+            ->Belt.Result.flatMap(decodeRow)
+            ->Belt.Result.map(x => x |> Expect.expect |> Expect.toEqual(2.0))
+          ) {
+          | Belt.Result.Ok(assertion) => assertion->finish
+          | Belt.Result.Error(message) => message->fail->finish
           }
         )
       )
