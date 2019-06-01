@@ -1,7 +1,7 @@
 open Jest;
 
 [@bs.val] [@bs.scope "Number"]
-external max_safe_integer : int = "MAX_SAFE_INTEGER";
+external max_safe_integer: int = "MAX_SAFE_INTEGER";
 
 let connect = () =>
   MySql2.Connection.connect(~host="127.0.0.1", ~port=3306, ~user="root", ());
@@ -41,8 +41,7 @@ describe("Raw SQL Query Test", () => {
       "SHOW DATABASES",
       None,
       onSelect(finish, (select, next) =>
-        select
-        |. MySql2.Select.flatMap(Json.Decode.dict(Json.Decode.string))
+        select->(MySql2.Select.flatMap(Json.Decode.dict(Json.Decode.string)))
         |> Js.Array.map(x => Js.Dict.unsafeGet(x, "Database"))
         |> Expect.expect
         |> Expect.toContain("test")
@@ -88,8 +87,8 @@ describe("Raw SQL Query Test Sequence", () => {
       onMutation(finish, (mutation, next) =>
         (
           MySql2.Mutation.insertId(mutation)
-          |. Belt.Option.getExn
-          |. MySql2.Id.toString,
+          ->Belt.Option.getExn
+          ->MySql2.Id.toString,
           MySql2.Mutation.affectedRows(mutation),
         )
         |> Expect.expect
@@ -123,8 +122,7 @@ describe("Raw SQL Query Test Sequence", () => {
       sql,
       None,
       onSelect(finish, (select, next) =>
-        select
-        |. MySql2.Select.flatMap(decoder)
+        select->(MySql2.Select.flatMap(decoder))
         |> Expect.expect
         |> Expect.toHaveLength(0)
         |> next
@@ -148,8 +146,7 @@ describe("Raw SQL Query Test Sequence", () => {
       sql,
       None,
       onSelect(finish, (select, next) =>
-        select
-        |. MySql2.Select.flatMap(decoder)
+        select->(MySql2.Select.flatMap(decoder))
         |> first_row
         |> Expect.expect
         |> Expect.toBeSupersetOf([|true, true|])
@@ -170,10 +167,10 @@ describe("Raw SQL Query Test Sequence", () => {
       None,
       onMutation(finish, (mutation, next) =>
         MySql2.Mutation.insertId(mutation)
-        |. Belt.Option.getExn
-        |. MySql2.Id.toString
+        ->Belt.Option.getExn
+        ->MySql2.Id.toString
         |> Expect.expect
-        |> Expect.toBe(max_safe_integer |. string_of_int)
+        |> Expect.toBe(max_safe_integer->string_of_int)
         |> next
       ),
     );
@@ -191,9 +188,9 @@ describe("Raw SQL Query Test Sequence", () => {
       None,
       onMutation(finish, (mutation, next) =>
         mutation
-        |. MySql2.Mutation.insertId
-        |. Belt.Option.getExn
-        |. MySql2.Id.toString
+        ->MySql2.Mutation.insertId
+        ->Belt.Option.getExn
+        ->MySql2.Id.toString
         |> Expect.expect
         |> Expect.toBe("9007199254740993")
         |> next

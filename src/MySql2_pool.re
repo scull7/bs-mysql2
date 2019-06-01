@@ -3,10 +3,10 @@ type t;
 /* Alias for internal use only */
 type pool = t;
 
-module Connection = MySql2_connection;
+module Connection = MySql2_binding.Connection;
 
 [@bs.send]
-external on :
+external on:
   (
     pool,
     [@bs.string] [
@@ -72,14 +72,13 @@ module Options = {
   };
 };
 
-[@bs.module "mysql2"] external createPool : Options.t => pool = "";
+[@bs.module "mysql2"] external createPool: Options.t => pool = "";
 
 [@bs.send]
-external drain : (pool, Js.Null_undefined.t(Js.Exn.t) => unit) => unit =
-  "end";
+external drain: (pool, Js.Null_undefined.t(Js.Exn.t) => unit) => unit = "end";
 
 [@bs.send]
-external getConnection :
+external getConnection:
   (
     pool,
     (Js.Null_undefined.t(Js.Exn.t), Js.Null_undefined.t(Connection.t)) =>
@@ -88,7 +87,7 @@ external getConnection :
   unit =
   "";
 
-[@bs.send] external release : Connection.t => unit = "";
+[@bs.send] external release: Connection.t => unit = "";
 
 let make =
     (

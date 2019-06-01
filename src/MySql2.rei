@@ -61,15 +61,13 @@ module Pool: {
 module Exn: {
   type t;
 
-  let fromJs: Js.Json.t => t;
-
   let toExn: t => exn;
 
-  let fromJsToExn: Js.Json.t => exn;
+  let fromJs: Js.Json.t => t;
 };
 
-module Id: {
-  type t = MySql2_id.t;
+module ID: {
+  type t = MySql2_binding.ID.t;
 
   let fromJson: Js.Json.t => t;
 
@@ -78,10 +76,13 @@ module Id: {
   let toString: t => string;
 };
 
+// @deprecated
+module Id = ID;
+
 module Mutation: {
   type t;
 
-  let insertId: t => option(MySql2_id.t);
+  let insertId: t => option(MySql2_binding.ID.t);
 
   let fieldCount: t => int;
 
@@ -102,34 +103,55 @@ module Params: {
   let positional: Js.Json.t => t;
 };
 
+module Meta: {
+  type t;
+
+  let t:
+    (
+      ~catalog: string,
+      ~schema: string,
+      ~name: string,
+      ~orgName: string,
+      ~table: string,
+      ~orgTable: string,
+      ~characterSet: int,
+      ~columnLength: int,
+      ~columnType: int,
+      ~flags: int,
+      ~decimals: int
+    ) =>
+    t;
+
+  let catalog: t => string;
+
+  let schema: t => string;
+
+  let name: t => string;
+
+  let orgName: t => string;
+
+  let table: t => string;
+
+  let orgTable: t => string;
+
+  let characterSet: t => int;
+
+  let columnLength: t => int;
+
+  let columnType: t => int;
+
+  let flags: t => int;
+
+  let decimals: t => int;
+};
+
 module Select: {
   type t;
 
-  module Meta: {
-    type t;
+  // @deprecated
+  module Meta = Meta;
 
-    let catalog: t => string;
-
-    let schema: t => string;
-
-    let name: t => string;
-
-    let orgName: t => string;
-
-    let table: t => string;
-
-    let orgTable: t => string;
-
-    let characterSet: t => int;
-
-    let columnLength: t => int;
-
-    let columnType: t => int;
-
-    let flags: t => int;
-
-    let decimals: t => int;
-  };
+  let make: (~rows: array(Js.Json.t), ~meta: array(Meta.t)) => t;
 
   let meta: t => array(Meta.t);
 

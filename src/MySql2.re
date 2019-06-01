@@ -1,20 +1,153 @@
-module Connection = MySql2_connection;
+module Connection = {
+  include MySql2_binding.Connection;
+
+  /**
+   * For now we just consider all connection level errors to be irrecoverable,
+   * therefore, we invalidate the connection on any error.
+   */
+  let errorHandler =
+    [@bs.this]
+    (
+      (connection, error) => {
+        Js.Console.error2("bs-mysql2 :: Connection :: FAILURE ::", error);
+        connection->failedSet(true);
+      }
+    );
+
+  let make = (~host=?, ~port=?, ~user=?, ~password=?, ~database=?, _) =>
+    Config.t(~host?, ~port?, ~user?, ~password?, ~database?, ())
+    ->make
+    ->on(`error(errorHandler));
+
+  let isValid = t => t->failedGet->Belt.Option.getWithDefault(true);
+
+  // @deprecated
+  let connect = make;
+};
 
 module Pool = MySql2_pool;
 
-module Exn = MySql2_error;
+module Exn = {
+  include MySql2_binding.Exn;
 
-module Id = MySql2_id;
+  let nameGet = t => t->nameGet->Belt.Option.getWithDefault("UNKNOWN");
 
-module Params = MySql2_params;
+  let codeGet = t => t->codeGet->Belt.Option.getWithDefault("99999");
 
-module Mutation = MySql2_response.Mutation;
+  let errnoGet = t => t->errnoGet->Belt.Option.getWithDefault(99999);
 
-module Select = MySql2_response.Select;
+  let msgGet = t => t->msgGet->Belt.Option.getWithDefault("EMPTY_MESSAGE");
 
-module Response = MySql2_response;
+  //let sqlGet = t => t->sqlGet->Belt.Option.getWithDefault("SQL_NOT_PRESENT");
 
-module Options = MySql2_options;
+  let toExn = t => {
+    let name = t->nameGet;
+    let code = t->codeGet;
+    let errno = t->errnoGet;
+    let msg = t->msgGet;
+    let sqlState = t->sqlStateGet;
+    let sqlMessage = t->sqlMessageGet;
+
+    switch (sqlState, sqlMessage) {
+    | (Some(state), Some(message)) =>
+      Failure({j|$name - $code ($errno) - $msg - ($state) $message|j})
+    | (Some(state), None) =>
+      Failure({j|$name - $code ($errno) - $msg - ($state)|j})
+    | (None, Some(message)) =>
+      Failure({j|$name - $code ($errno) - $msg - $message|j})
+    | (None, None) => Failure({j|$name - $code ($errno) - $msg|j})
+    };
+  };
+
+  let invalidResponseType =
+    t(
+      ~name="InvalidResponseType",
+      ~msg="invalid_driver_result",
+      ~code="UNKNOWN_RESPONSE_TYPE",
+      ~errno=99999,
+      (),
+    );
+};
+
+module ID = {
+  include MySql2_binding.ID;
+
+  let fromJson = json =>
+    switch (json->Js.Json.classify) {
+    | Js.Json.JSONNumber(float) => float->Js.Float.toString->Js.Json.string
+    | Js.Json.JSONString(string) => string->Js.Json.string
+    | _ => failwith("unexpected_identifier_value")
+    };
+
+  let toJson = fromJson;
+
+  let toString = t =>
+    switch (t->Js.Json.classify) {
+    | Js.Json.JSONNumber(float) => float->Js.Float.toString
+    | Js.Json.JSONString(string) => string
+    | _ => failwith("unexpected_identifier_value")
+    };
+
+  let isZero = t => t->toString === "0";
+};
+
+// @deprecated
+module Id = ID;
+
+module Params = {
+  type t = [ | `Named(Js.Json.t) | `Positional(Js.Json.t)];
+
+  let named = json => `Named(json);
+
+  let positional = json => `Positional(json);
+};
+
+module Meta = MySql2_binding.Response.Meta;
+
+module Mutation = {
+  include MySql2_binding.Response.Mutation;
+
+  let insertId = t =>
+    t
+    ->insertIdGet
+    ->Belt.Option.flatMap(id => id->ID.isZero ? None : Some(id));
+};
+
+module Select = {
+  include MySql2_binding.Response.Select;
+
+  // @deprecated
+  module Meta = Meta;
+
+  let make = t;
+
+  let flatMapWithMeta = (t, fn) =>
+    Belt.Array.map(t->rowsGet, row => fn(row, t->metaGet));
+
+  let flatMap = (t, decoder) => Belt.Array.map(t->rowsGet, decoder);
+
+  let concat = (t1, t2) =>
+    t(~rows=Belt.Array.concat(t1->rowsGet, t2->rowsGet), ~meta=t1->metaGet);
+
+  let count = t => Belt.Array.length(t->rowsGet);
+
+  let rows = t => t->rowsGet;
+};
+
+module Response = MySql2_binding.Response;
+
+module Options = {
+  include MySql2_binding.Options;
+
+  let fromParams = (sql, params) =>
+    switch (params) {
+    | None => t(~sql, ~values=Js.Nullable.null, ~namedPlaceholders=false)
+    | Some(`Named(json)) =>
+      t(~sql, ~values=Js.Nullable.return(json), ~namedPlaceholders=true)
+    | Some(`Positional(json)) =>
+      t(~sql, ~values=Js.Nullable.return(json), ~namedPlaceholders=false)
+    };
+};
 
 type response = [
   | `Error(Exn.t)
@@ -22,41 +155,28 @@ type response = [
   | `Select(Select.t)
 ];
 
-type callback = Response.t => unit;
+type callback = response => unit;
 
-[@bs.send]
-external execute :
-  (
-    Connection.t,
-    Options.t,
-    (Js.Nullable.t(Js.Json.t), Js.Json.t, array(Js.Json.t)) => unit
-  ) =>
-  unit =
-  "execute";
+let handler = (callback, exn, res, meta) => {
+  let response =
+    switch (exn->Js.Nullable.toOption) {
+    | Some(e) => `Error(e)
+    | None =>
+      switch (res->Js.Json.classify) {
+      | Js.Json.JSONArray(rows) => `Select(Response.Select.t(~rows, ~meta))
+      | Js.Json.JSONObject(_) =>
+        `Mutation(res->MySql2_binding.shadyMutationConversion)
+      | _ => `Error(Exn.invalidResponseType)
+      }
+    };
 
-[@bs.send]
-external query :
-  (
-    Connection.t,
-    Options.t,
-    (Js.Nullable.t(Js.Json.t), Js.Json.t, array(Js.Json.t)) => unit
-  ) =>
-  unit =
-  "query";
-
-let handler = (callback, exn, res, meta) =>
-  (
-    switch (exn |. Js.Nullable.toOption) {
-    | Some(e) => `Error(e |. Exn.fromJs)
-    | None => Response.fromDriverResponse(res, meta)
-    }
-  )
-  |. callback;
+  callback(response);
+};
 
 let execute = (conn, sql, params, callback) => {
   let options = Options.fromParams(sql, params);
 
-  options |. Options.namedPlaceholdersGet ?
-    execute(conn, options, handler(callback)) :
-    query(conn, options, handler(callback));
+  options->Options.namedPlaceholdersGet
+    ? MySql2_binding.execute(conn, options, handler(callback))
+    : MySql2_binding.query(conn, options, handler(callback));
 };

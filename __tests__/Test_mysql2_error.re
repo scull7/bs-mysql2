@@ -52,7 +52,7 @@ describe("MySql2 Error Handling", () => {
   test("Should parse out an empty error with defaults", () => {
     /* Use raw JS here toe retrieve a garbage object */
     let e = [%raw {| (function () { return { message: "IDKWTM" } })() |}];
-    let actual = MySql2_error.fromJsToExn(e);
+    let actual = MySql2.Exn.fromJs(e)->MySql2.Exn.toExn;
 
     Expect.expect(() =>
       raise(actual)
@@ -63,7 +63,7 @@ describe("MySql2 Error Handling", () => {
   test("Should return a defaulted error", () => {
     /* Use raw JS here toe retrieve a garbage object */
     let e = [%raw {| (function () { return {} })()|}];
-    let actual = MySql2_error.fromJsToExn(e);
+    let actual = MySql2.Exn.fromJs(e)->MySql2.Exn.toExn;
 
     Expect.expect(() =>
       raise(actual)
@@ -74,7 +74,7 @@ describe("MySql2 Error Handling", () => {
   test("should give appropriate message when only a sqlState is given", () => {
     /* Use raw JS here toe retrieve a garbage object */
     let e = [%raw {| (function () { return { sqlState: "test" } })()|}];
-    let actual = MySql2_error.fromJsToExn(e);
+    let actual = MySql2.Exn.fromJs(e)->MySql2.Exn.toExn;
 
     Expect.expect(() =>
       raise(actual)
@@ -87,7 +87,7 @@ describe("MySql2 Error Handling", () => {
   test("should give appropriate message when only a sqlMessage is given", () => {
     /* Use raw JS here toe retrieve a garbage object */
     let e = [%raw {| (function () { return { sqlMessage: "test" } })()|}];
-    let actual = MySql2_error.fromJsToExn(e);
+    let actual = MySql2.Exn.fromJs(e)->MySql2.Exn.toExn;
 
     Expect.expect(() =>
       raise(actual)

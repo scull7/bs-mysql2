@@ -37,15 +37,15 @@
   "author": "Nathan Sculli <scull7@gmail.com>",
   "license": "MIT",
   "dependencies": {
-    "@glennsl/bs-json": "^2.0.0",
-    "mysql2": "^1.5.3"
+    "mysql2": "^1.6.5"
   },
   "devDependencies": {
-    "@glennsl/bs-jest": "^0.4.2",
-    "bs-platform": "^4.0.1",
-    "coveralls": "^3.0.1",
-    "husky": "^0.14.3",
-    "lint-staged": "^7.1.0",
-    "nyc": "^11.8.0"
+    "@glennsl/bs-jest": "^0.4.8",
+    "@glennsl/bs-json": "^4.0.0",
+    "bs-platform": "^5.0.4",
+    "coveralls": "^3.0.3",
+    "husky": "^2.3.0",
+    "lint-staged": "^8.1.7",
+    "nyc": "^14.1.1"
   }
 }
