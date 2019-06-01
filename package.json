@@ -1,6 +1,6 @@
 {
   "name": "bs-mysql2",
-  "version": "8.2.1",
+  "version": "9.0.0",
   "description": "ReasonML bindings to the mysql2 library.",
   "scripts": {
     "examples:simple": "node examples/simple.bs.js",
@@ -10,15 +10,14 @@
     "build": "bsb -make-world",
     "clean": "bsb -clean-world",
     "coverage": "nyc report --temp-directory=coverage --reporter=text-lcov | coveralls",
-    "format": "yarn bsrefmt --in-place",
-    "precommit": "lint-staged",
+    "format": "npm run bsrefmt --in-place",
     "start": "bsb -make-world -w",
     "test": "jest --coverage",
     "watch:jest": "jest --coverage --watchAll"
   },
   "lint-staged": {
     "*.{re,rei}": [
-      "yarn format",
+      "npm run format",
       "git add"
     ]
   },
@@ -47,5 +46,10 @@
     "husky": "^2.3.0",
     "lint-staged": "^8.1.7",
     "nyc": "^14.1.1"
+  },
+  "husky": {
+    "hooks": {
+      "pre-commit": "lint-staged"
+    }
   }
 }
