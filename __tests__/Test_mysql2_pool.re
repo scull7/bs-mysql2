@@ -65,9 +65,11 @@ describe("MySql2.Pool", () => {
     | Js.Json.JSONObject(dict) =>
       switch (dict->Js.Dict.get("result")) {
       | Some(result) =>
-        switch (result->Js.Json.decodeNumber) {
-        | Some(number) => Belt.Result.Ok(number)
-        | None => Belt.Result.Error({j|Result wasn't a number: $result|j})
+        switch (result->Js.Json.classify) {
+        | Js.Json.JSONNumber(number) => Belt.Result.Ok(number)
+        | Js.Json.JSONString(string) =>
+          Belt.Result.Ok(string->float_of_string)
+        | _ => Belt.Result.Error({j|Result wasn't a number: $result|j})
         }
       | None =>
         Belt.Result.Error({j|Could not find result key in row: $dict|j})
