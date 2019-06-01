@@ -10,14 +10,14 @@
     "build": "bsb -make-world",
     "clean": "bsb -clean-world",
     "coverage": "nyc report --temp-directory=coverage --reporter=text-lcov | coveralls",
-    "format": "npm run bsrefmt --in-place",
+    "format": "yarn bsrefmt --in-place",
     "start": "bsb -make-world -w",
     "test": "jest --coverage",
     "watch:jest": "jest --coverage --watchAll"
   },
   "lint-staged": {
     "*.{re,rei}": [
-      "npm run format",
+      "yarn format",
       "git add"
     ]
   },
