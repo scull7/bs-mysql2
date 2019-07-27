@@ -12,18 +12,26 @@ let connect = () =>
 
 type result = {result: int};
 
+module Decoder = {
+  [@bs.deriving abstract]
+  type t = {result: int};
+
+  external decode: 'a => t = "%identity";
+};
+
 describe("Test parameter interpolation", () => {
   let conn = connect();
-  let decoder = json => Json.Decode.{result: json |> field("result", int)};
+  let decoder = Decoder.decode;
+
   afterAll(() => MySql2.Connection.close(conn));
+
   describe("Standard (positional) parameters", () =>
     testAsync("Expect parameters to be substituted properly", finish => {
       let sql = "SELECT 1 + ? + ? AS result";
       let params =
         Some(
           MySql2.Params.positional(
-            Belt_Array.map([|5, 6|], Json.Encode.int)
-            |> Json.Encode.jsonArray,
+            Belt_Array.map([|5, 6|], float_of_int) |> Js.Json.numberArray,
           ),
         );
       MySql2.execute(conn, sql, params, res =>
@@ -31,9 +39,8 @@ describe("Test parameter interpolation", () => {
         | `Error(e) => raise(e |> MySql2.Exn.toExn)
         | `Mutation(_) => fail("unexpected_mutation_result") |> finish
         | `Select(select) =>
-          select
-          |. MySql2.Select.flatMapWithMeta((row, _) => row |. decoder)
-          |> Belt_Array.map(_, x => x.result)
+          select->(MySql2.Select.flatMapWithMeta((row, _) => row->decoder))
+          |> Belt_Array.map(_, x => x->Decoder.resultGet)
           |> Expect.expect
           |> Expect.toBeSupersetOf([|12|])
           |> finish
@@ -44,23 +51,20 @@ describe("Test parameter interpolation", () => {
   describe("Named parameters", () =>
     testAsync("Expect parameters to be substituted properly", finish => {
       let sql = "SELECT :x + :y AS result";
-      let params =
-        Some(
-          MySql2.Params.named(
-            Json.Encode.object_([
-              ("x", Json.Encode.int(1)),
-              ("y", Json.Encode.int(2)),
-            ]),
-          ),
-        );
+
+      let obj = Js.Dict.empty();
+      obj->Js.Dict.set("x", float_of_int(1)->Js.Json.number);
+      obj->Js.Dict.set("y", float_of_int(2)->Js.Json.number);
+
+      let params = Some(obj->Js.Json.object_->MySql2.Params.named);
+
       MySql2.execute(conn, sql, params, res =>
         switch (res) {
         | `Error(e) => raise(e |> MySql2.Exn.toExn)
         | `Mutation(_) => fail("unexpected_mutation_result") |> finish
         | `Select(select) =>
-          select
-          |. MySql2.Select.flatMap(decoder)
-          |> Belt_Array.map(_, x => x.result)
+          select->(MySql2.Select.flatMap(decoder))
+          |> Belt_Array.map(_, x => x->Decoder.resultGet)
           |> Expect.expect
           |> Expect.toBeSupersetOf([|3|])
           |> finish

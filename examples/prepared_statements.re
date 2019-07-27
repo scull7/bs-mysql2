@@ -3,9 +3,9 @@ let conn =
 
 let positional =
   Some(
-    MySql2.Params.positional(
-      Belt_Array.map([|5, 6|], Json.Encode.int) |> Json.Encode.jsonArray,
-    ),
+    Belt_Array.map([|5, 6|], float_of_int)
+    |> Js.Json.numberArray
+    |> MySql2.Params.positional,
   );
 
 MySql2.execute(conn, "SELECT 1 + ? + ? AS result", positional, res =>
@@ -16,15 +16,11 @@ MySql2.execute(conn, "SELECT 1 + ? + ? AS result", positional, res =>
   }
 );
 
-let named =
-  Some(
-    MySql2.Params.named(
-      Json.Encode.object_([
-        ("x", Json.Encode.int(1)),
-        ("y", Json.Encode.int(2)),
-      ]),
-    ),
-  );
+let obj = Js.Dict.empty();
+obj->Js.Dict.set("x", float_of_int(1)->Js.Json.number);
+obj->Js.Dict.set("y", float_of_int(2)->Js.Json.number);
+
+let named = Some(obj->Js.Json.object_->MySql2.Params.named);
 
 MySql2.execute(conn, "SELECT :x + :y AS result", named, res =>
   switch (res) {

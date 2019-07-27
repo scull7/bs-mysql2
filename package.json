@@ -40,7 +40,6 @@
   },
   "devDependencies": {
     "@glennsl/bs-jest": "^0.4.8",
-    "@glennsl/bs-json": "^4.0.0",
     "bs-platform": "^5.0.4",
     "coveralls": "^3.0.3",
     "husky": "^2.3.0",

@@ -32,6 +32,32 @@ let onMutation = (next, fn, res) =>
   | `Select(_) => fail("unexpected_select_result") |> next
   };
 
+module DatabaseListRecord = {
+  [@bs.deriving abstract]
+  type t = {
+    [@bs.as "Database"]
+    databaseName: string,
+  };
+
+  external decode: 'a => t = "%identity";
+};
+
+module DatabaseNullRecord = {
+  type t;
+
+  external decode: 'a => t = "%identity";
+};
+
+module DatabaseCodeRecord = {
+  [@bs.deriving abstract]
+  type t = {
+    id: int,
+    code: string,
+  };
+
+  external decode: 'a => t = "%identity";
+};
+
 describe("Raw SQL Query Test", () => {
   let conn = connect();
   afterAll(() => MySql2.Connection.close(conn));
@@ -41,8 +67,8 @@ describe("Raw SQL Query Test", () => {
       "SHOW DATABASES",
       None,
       onSelect(finish, (select, next) =>
-        select->(MySql2.Select.flatMap(Json.Decode.dict(Json.Decode.string)))
-        |> Js.Array.map(x => Js.Dict.unsafeGet(x, "Database"))
+        select->MySql2.Select.flatMap(DatabaseListRecord.decode)
+        |> Js.Array.map(DatabaseListRecord.databaseNameGet)
         |> Expect.expect
         |> Expect.toContain("test")
         |> next
@@ -116,13 +142,12 @@ describe("Raw SQL Query Test Sequence", () => {
   });
   testAsync("Expect a SELECT NULL to return an empty array", finish => {
     let sql = "SELECT NULL FROM `test`.`simple` WHERE false";
-    let decoder = Json.Decode.dict(Json.Decode.nullable(Json.Decode.string));
     MySql2.execute(
       conn,
       sql,
       None,
       onSelect(finish, (select, next) =>
-        select->(MySql2.Select.flatMap(decoder))
+        select->(MySql2.Select.flatMap(DatabaseNullRecord.decode))
         |> Expect.expect
         |> Expect.toHaveLength(0)
         |> next
@@ -131,14 +156,10 @@ describe("Raw SQL Query Test Sequence", () => {
   });
   testAsync("Expect a SELECT * to respond with all the columns", finish => {
     let sql = "SELECT * FROM `test`.`simple`";
-    let decoder = json =>
-      Json.Decode.{
-        id: json |> field("id", int),
-        code: json |> field("code", string),
-      };
+    let decoder = DatabaseCodeRecord.decode;
     let first_row = x => {
-      let idIsOne = x[0].id == 1;
-      let codeIsFoo = x[0].code == "foo";
+      let idIsOne = DatabaseCodeRecord.idGet(x[0]) == 1;
+      let codeIsFoo = DatabaseCodeRecord.codeGet(x[0]) == "foo";
       [|idIsOne, codeIsFoo|];
     };
     MySql2.execute(
