@@ -16,15 +16,13 @@ describe("MySql2_id", () => {
     test("should fail when given a JSON boolean", () => {
       let fn = () => Js.Json.boolean(true)->MySql2.ID.fromJson;
 
-      Expect.expect(fn)
-      |> Expect.toThrowMessage("unexpected_identifier_value");
+      Expect.expect(fn) |> Expect.toThrow;
     });
 
     test("should fail when given a JSON array", () => {
       let fn = () => Js.Json.array([||])->MySql2.ID.fromJson;
 
-      Expect.expect(fn)
-      |> Expect.toThrowMessage("unexpected_identifier_value");
+      Expect.expect(fn) |> Expect.toThrow;
     });
   });
 });

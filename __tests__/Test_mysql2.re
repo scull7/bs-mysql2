@@ -5,8 +5,8 @@ let connect = () =>
     ~host="127.0.0.1",
     ~port=3306,
     ~user="root",
-    ~password="",
     ~database="test",
+    ~password=ExampleEnv.getPassword(),
     (),
   );
 
@@ -36,10 +36,10 @@ let mutationPromise = (db, sql, params) =>
       params,
       fun
       | `Error(e) => reject(. e |> MySql2.Exn.toExn)
-      | `Select(_) => reject(. "unexpected_select_result" |. Failure)
+      | `Select(_) => reject(. "unexpected_select_result"->Failure)
       | `Mutation(m) => resolve(. m),
     )
-    |. ignore
+    ->ignore
   );
 
 let selectPromise = (db, sql, params) =>
@@ -50,31 +50,31 @@ let selectPromise = (db, sql, params) =>
       params,
       fun
       | `Error(e) => reject(. e |> MySql2.Exn.toExn)
-      | `Mutation(_) => reject(. "unexpected_mutation_result" |. Failure)
+      | `Mutation(_) => reject(. "unexpected_mutation_result"->Failure)
       | `Select(select) => resolve(. select),
     )
-    |. ignore
+    ->ignore
   );
 
 describe("MySql2", () => {
   let db = ref(None);
 
-  let getDb = () => db^ |. Belt.Option.getExn;
+  let getDb = () => (db^)->Belt.Option.getExn;
 
   beforeAllPromise(() => {
-    db := connect() |. Some;
+    db := connect()->Some;
 
     mutationPromise(getDb(), "DROP TABLE IF EXISTS `test`.`mysql2`", None)
     |> Js.Promise.then_(_ => mutationPromise(getDb(), table_sql, None))
     |> Js.Promise.then_(_ => mutationPromise(getDb(), seed_sql, None));
   });
 
-  afterAll(() => getDb() |. MySql2.Connection.close);
+  afterAll(() => getDb()->MySql2.Connection.close);
 
   describe("Mutation", () => {
     let result = ref(None);
 
-    let getResult = () => result^ |. Belt.Option.getExn;
+    let getResult = () => (result^)->Belt.Option.getExn;
 
     beforeAllPromise(() => {
       let sql = {|
@@ -93,7 +93,7 @@ describe("MySql2", () => {
 
     let makeTest = (label, fn, expected) =>
       test(label, () =>
-        getResult() |. fn |. Expect.expect |> Expect.toBe(expected)
+        getResult()->fn->Expect.expect |> Expect.toBe(expected)
       );
 
     describe("fieldCount", () =>
@@ -116,7 +116,7 @@ describe("MySql2", () => {
   describe("Select", () => {
     let result = ref(None);
 
-    let getResult = () => result^ |. Belt.Option.getExn;
+    let getResult = () => (result^)->Belt.Option.getExn;
 
     beforeAllPromise(() =>
       selectPromise(getDb(), "SELECT * FROM `test`.`mysql2`", None)
@@ -128,10 +128,7 @@ describe("MySql2", () => {
 
     let makeMetaTest = (label, fn, expected) =>
       test(label, () =>
-        getResult()
-        |. MySql2.Select.meta
-        |. Belt.Array.map(fn)
-        |. Expect.expect
+        getResult()->MySql2.Select.meta->(Belt.Array.map(fn))->Expect.expect
         |> Expect.toEqual(expected)
       );
 

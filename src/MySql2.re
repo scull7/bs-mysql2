@@ -108,9 +108,7 @@ module Mutation = {
   include MySql2_binding.Response.Mutation;
 
   let insertId = t =>
-    t
-    ->insertIdGet
-    ->Belt.Option.flatMap(id => id->ID.isZero ? None : Some(id));
+    t->insertId->Belt.Option.flatMap(id => id->ID.isZero ? None : Some(id));
 };
 
 module Select = {
@@ -122,16 +120,16 @@ module Select = {
   let make = t;
 
   let flatMapWithMeta = (t, fn) =>
-    Belt.Array.map(t->rowsGet, row => fn(row, t->metaGet));
+    Belt.Array.map(t->rows, row => fn(row, t->meta));
 
-  let flatMap = (t, decoder) => Belt.Array.map(t->rowsGet, decoder);
+  let flatMap = (t, decoder) => Belt.Array.map(t->rows, decoder);
 
   let concat = (t1, t2) =>
-    t(~rows=Belt.Array.concat(t1->rowsGet, t2->rowsGet), ~meta=t1->metaGet);
+    t(~rows=Belt.Array.concat(t1->rows, t2->rows), ~meta=t1->meta);
 
-  let count = t => Belt.Array.length(t->rowsGet);
+  let count = t => Belt.Array.length(t->rows);
 
-  let rows = t => t->rowsGet;
+  let rows = t => t->rows;
 };
 
 module Response = MySql2_binding.Response;

@@ -1,7 +1,13 @@
 open Jest;
 
 let connect = () =>
-  MySql2.Connection.connect(~host="127.0.0.1", ~port=3306, ~user="root", ());
+  MySql2.Connection.connect(
+    ~host="127.0.0.1",
+    ~port=3306,
+    ~user="root",
+    ~password=ExampleEnv.getPassword(),
+    (),
+  );
 
 describe("MySql2 Error Handling", () => {
   let conn = connect();
@@ -19,10 +25,8 @@ describe("MySql2 Error Handling", () => {
         | `Select(_) => fail("unexpected_select_result") |> finish
         | `Mutation(_) => fail("unexpected_mutation_result") |> finish
         | `Error(e) =>
-          Expect.expect(() =>
-            raise(e |> MySql2.Exn.toExn)
-          )
-          |> Expect.toThrowMessage("ER_ACCESS_DENIED_ERROR")
+          Expect.expect(e |> MySql2.Exn.toExn)
+          |> Expect.toMatchSnapshot
           |> finish
         }
       );
@@ -39,10 +43,8 @@ describe("MySql2 Error Handling", () => {
         | `Select(_) => fail("unexpected_select_result") |> finish
         | `Mutation(_) => fail("unexpected_mutation_result") |> finish
         | `Error(e) =>
-          Expect.expect(() =>
-            raise(e |> MySql2.Exn.toExn)
-          )
-          |> Expect.toThrowMessage("ER_PARSE_ERROR")
+          Expect.expect(e |> MySql2.Exn.toExn)
+          |> Expect.toMatchSnapshot
           |> finish
         }
       );
@@ -54,10 +56,7 @@ describe("MySql2 Error Handling", () => {
     let e = [%raw {| (function () { return { message: "IDKWTM" } })() |}];
     let actual = MySql2.Exn.fromJs(e)->MySql2.Exn.toExn;
 
-    Expect.expect(() =>
-      raise(actual)
-    )
-    |> Expect.toThrowMessage("Failure,-2,UNKNOWN - 99999 (99999) - IDKWTM");
+    Expect.expect(actual) |> Expect.toMatchSnapshot;
   });
 
   test("Should return a defaulted error", () => {
@@ -65,10 +64,7 @@ describe("MySql2 Error Handling", () => {
     let e = [%raw {| (function () { return {} })()|}];
     let actual = MySql2.Exn.fromJs(e)->MySql2.Exn.toExn;
 
-    Expect.expect(() =>
-      raise(actual)
-    )
-    |> Expect.toThrowMessage("UNKNOWN - 99999 (99999) - EMPTY_MESSAGE");
+    Expect.expect(actual) |> Expect.toMatchSnapshot;
   });
 
   test("should give appropriate message when only a sqlState is given", () => {
@@ -76,12 +72,7 @@ describe("MySql2 Error Handling", () => {
     let e = [%raw {| (function () { return { sqlState: "test" } })()|}];
     let actual = MySql2.Exn.fromJs(e)->MySql2.Exn.toExn;
 
-    Expect.expect(() =>
-      raise(actual)
-    )
-    |> Expect.toThrowMessage(
-         "UNKNOWN - 99999 (99999) - EMPTY_MESSAGE - (test)",
-       );
+    Expect.expect(actual) |> Expect.toMatchSnapshot;
   });
 
   test("should give appropriate message when only a sqlMessage is given", () => {
@@ -89,9 +80,6 @@ describe("MySql2 Error Handling", () => {
     let e = [%raw {| (function () { return { sqlMessage: "test" } })()|}];
     let actual = MySql2.Exn.fromJs(e)->MySql2.Exn.toExn;
 
-    Expect.expect(() =>
-      raise(actual)
-    )
-    |> Expect.toThrowMessage("UNKNOWN - 99999 (99999) - EMPTY_MESSAGE - test");
+    Expect.expect(actual) |> Expect.toMatchSnapshot;
   });
 });

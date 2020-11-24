@@ -52,8 +52,7 @@ module Connection = {
   [@bs.send] external close: t => unit = "end";
   [@bs.send]
   external on:
-    (t, [@bs.string] [ | `error([@bs.this] ((t, Exn.t) => unit))]) => t =
-    "";
+    (t, [@bs.string] [ | `error([@bs.this] ((t, Exn.t) => unit))]) => t;
 };
 
 module Options = {
@@ -67,7 +66,7 @@ module Options = {
 
 module Response = {
   module Mutation = {
-    [@bs.deriving abstract]
+    [@bs.deriving {abstract: light}]
     type t = {
       [@bs.optional]
       insertId: ID.t,
@@ -87,7 +86,7 @@ module Response = {
   * @TODO - determine the meaning of the flags field.
   */
   module Meta = {
-    [@bs.deriving abstract]
+    [@bs.deriving {abstract: light}]
     type t = {
       catalog: string,
       schema: string,
@@ -104,7 +103,7 @@ module Response = {
   };
 
   module Select = {
-    [@bs.deriving abstract]
+    [@bs.deriving {abstract: light}]
     type t = {
       rows: array(Js.Json.t),
       meta: array(Meta.t),
@@ -128,8 +127,7 @@ external execute:
     Options.t,
     (Js.Nullable.t(Exn.t), Js.Json.t, array(Response.Meta.t)) => unit
   ) =>
-  unit =
-  "";
+  unit;
 
 [@bs.send]
 external query:
@@ -138,5 +136,4 @@ external query:
     Options.t,
     (Js.Nullable.t(Exn.t), Js.Json.t, array(Response.Meta.t)) => unit
   ) =>
-  unit =
-  "";
+  unit;
