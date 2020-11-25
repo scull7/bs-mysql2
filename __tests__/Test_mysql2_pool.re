@@ -8,12 +8,10 @@ let connect = () =>
     ~host="127.0.0.1",
     ~port=3306,
     ~user="root",
-    ~password="",
+    ~password=ExampleEnv.getPassword(),
     ~database="test",
     (),
   );
-
-let connectWithDefaults = () => MySql2.Pool.make();
 
 let select = (db, sql, params, cb) => {
   let returnError = e =>
@@ -100,28 +98,6 @@ describe("MySql2.Pool", () => {
 
     testAsync("should connect and allow a query", finish =>
       getDb(poolRef, connect, db =>
-        select(db, "SELECT 1 + 1 AS result", None, response =>
-          switch (
-            response
-            ->Belt.Result.flatMap(getFirstRow)
-            ->Belt.Result.flatMap(decodeRow)
-            ->Belt.Result.map(x => x |> Expect.expect |> Expect.toEqual(2.0))
-          ) {
-          | Belt.Result.Ok(assertion) => assertion->finish
-          | Belt.Result.Error(message) => message->fail->finish
-          }
-        )
-      )
-    );
-  });
-
-  describe("connect :: with defaults :: ", () => {
-    let poolRef = ref(None);
-
-    afterAllAsync(drain(poolRef));
-
-    testAsync("should connect and allow a query", finish =>
-      getDb(poolRef, connectWithDefaults, db =>
         select(db, "SELECT 1 + 1 AS result", None, response =>
           switch (
             response
